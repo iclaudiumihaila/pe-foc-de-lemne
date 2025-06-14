@@ -1,0 +1,54 @@
+User-agent: *
+Allow: /
+
+# Disallow admin pages
+Disallow: /admin/
+Disallow: /administrare/
+
+# Disallow checkout and cart pages (to prevent indexing of transaction pages)
+Disallow: /comanda
+Disallow: /cos/checkout
+Disallow: /confirmare-comanda
+
+# Disallow search result pages with parameters
+Disallow: /*?q=*
+Disallow: /*?search=*
+Disallow: /*?filter=*
+
+# Disallow API endpoints
+Disallow: /api/
+
+# Allow important pages
+Allow: /produse
+Allow: /produse?categoria=*
+Allow: /despre
+Allow: /contact
+
+# Sitemap location
+Sitemap: https://pefocdelemne.ro/sitemap.xml
+
+# Crawl delay for better server performance
+Crawl-delay: 1
+
+# Specific rules for major search engines
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Slurp
+Allow: /
+Crawl-delay: 2
+
+# Block known bad bots
+User-agent: BadBot
+Disallow: /
+
+User-agent: ScrapyBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /

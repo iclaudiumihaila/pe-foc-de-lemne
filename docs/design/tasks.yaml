@@ -1,0 +1,809 @@
+# Atomic Task Breakdown: Local Producer Web Application
+# Revised based on Architect B review feedback
+# Each task represents one small, fully testable increment with single deliverable
+
+tasks:
+  # Phase 1: Foundation Setup
+  - id: "01_backend_directory_structure"
+    title: "Create backend directory structure"
+    description: "Create backend/ directory with subdirectories: app/, tests/, static/"
+    deliverable: "Backend directory structure exists"
+    dependencies: []
+    estimate: "5min"
+    testable: "Directory structure matches architecture.md specification"
+
+  - id: "02_frontend_directory_structure"
+    title: "Create frontend directory structure"
+    description: "Create frontend/ directory with React project subdirectories"
+    deliverable: "Frontend directory structure exists"
+    dependencies: []
+    estimate: "5min"
+    testable: "Directory structure matches architecture.md specification"
+
+  - id: "03_backend_requirements_file"
+    title: "Create backend requirements.txt"
+    description: "Define Python dependencies: Flask, pymongo, twilio, bcrypt, python-jose"
+    deliverable: "requirements.txt with core backend dependencies"
+    dependencies: ["01_backend_directory_structure"]
+    estimate: "10min"
+    testable: "pip install -r requirements.txt succeeds"
+
+  - id: "04_frontend_package_json"
+    title: "Create frontend package.json"
+    description: "Initialize React project with dependencies: react, react-router-dom, tailwindcss"
+    deliverable: "package.json with React and styling dependencies"
+    dependencies: ["02_frontend_directory_structure"]
+    estimate: "10min"
+    testable: "npm install runs successfully"
+
+  - id: "05_env_configuration_template"
+    title: "Create environment configuration template"
+    description: "Create .env.example with all required environment variables"
+    deliverable: ".env.example file with MongoDB, Twilio, Flask config"
+    dependencies: ["01_backend_directory_structure"]
+    estimate: "10min"
+    testable: ".env.example contains all variables from architecture spec"
+
+  # Phase 2: Backend Infrastructure
+  - id: "06_flask_app_factory_basic"
+    title: "Create basic Flask app factory"
+    description: "Implement Flask(__name__) app factory function only"
+    deliverable: "backend/app/__init__.py with minimal Flask app factory"
+    dependencies: ["03_backend_requirements_file"]
+    estimate: "10min"
+    testable: "Flask app imports and creates without errors"
+
+  - id: "07_configuration_loading"
+    title: "Create configuration management"
+    description: "Implement config.py with environment variable loading"
+    deliverable: "backend/app/config.py with Config class"
+    dependencies: ["05_env_configuration_template"]
+    estimate: "15min"
+    testable: "Config class loads environment variables correctly"
+
+  - id: "08_mongodb_connection_basic"
+    title: "Create MongoDB connection module"
+    description: "Implement basic MongoDB connection using PyMongo"
+    deliverable: "backend/app/database.py with MongoDB connection function"
+    dependencies: ["07_configuration_loading"]
+    estimate: "15min"
+    testable: "MongoDB connection succeeds with test database"
+
+  - id: "09_database_indexes_setup"
+    title: "Create database indexes setup"
+    description: "Implement index creation for phone_number, category_id, order_number, session_id"
+    deliverable: "backend/app/database.py with index creation function"
+    dependencies: ["08_mongodb_connection_basic"]
+    estimate: "20min"
+    testable: "All indexes created successfully in MongoDB"
+
+  - id: "10_input_validation_middleware"
+    title: "Create input validation middleware"
+    description: "Implement JSON schema validation middleware for Flask requests"
+    deliverable: "backend/app/utils/validators.py with validation functions"
+    dependencies: ["06_flask_app_factory_basic"]
+    estimate: "25min"
+    testable: "Validation middleware rejects invalid input correctly"
+
+  - id: "11_error_handling_middleware"
+    title: "Create error handling middleware"
+    description: "Implement standardized error response middleware"
+    deliverable: "backend/app/utils/error_handlers.py with error handler functions"
+    dependencies: ["06_flask_app_factory_basic"]
+    estimate: "20min"
+    testable: "Error middleware returns standard error format"
+
+  - id: "12_basic_api_blueprint"
+    title: "Create basic API blueprint with health check"
+    description: "Setup API blueprint with GET /api/health endpoint only"
+    deliverable: "backend/app/routes/__init__.py with health check endpoint"
+    dependencies: ["11_error_handling_middleware"]
+    estimate: "10min"
+    testable: "GET /api/health returns 200 with success response format"
+
+  # Phase 3: Data Models
+  - id: "13_user_model_creation"
+    title: "Create User data model class"
+    description: "Implement User model class with schema validation"
+    deliverable: "backend/app/models/user.py with User class"
+    dependencies: ["09_database_indexes_setup"]
+    estimate: "20min"
+    testable: "User model can create and save user documents"
+
+  - id: "14_user_model_unit_tests"
+    title: "Create User model unit tests"
+    description: "Write unit tests for User model CRUD operations"
+    deliverable: "backend/tests/test_user_model.py with comprehensive tests"
+    dependencies: ["13_user_model_creation"]
+    estimate: "15min"
+    testable: "All User model tests pass"
+
+  - id: "15_category_model_creation"
+    title: "Create Category data model class"
+    description: "Implement Category model class with schema validation"
+    deliverable: "backend/app/models/category.py with Category class"
+    dependencies: ["09_database_indexes_setup"]
+    estimate: "15min"
+    testable: "Category model can create and save category documents"
+
+  - id: "16_category_model_unit_tests"
+    title: "Create Category model unit tests"
+    description: "Write unit tests for Category model CRUD operations"
+    deliverable: "backend/tests/test_category_model.py with comprehensive tests"
+    dependencies: ["15_category_model_creation"]
+    estimate: "15min"
+    testable: "All Category model tests pass"
+
+  - id: "17_product_model_creation"
+    title: "Create Product data model class"
+    description: "Implement Product model class with schema validation and category reference"
+    deliverable: "backend/app/models/product.py with Product class"
+    dependencies: ["15_category_model_creation"]
+    estimate: "20min"
+    testable: "Product model can create and save product documents with category"
+
+  - id: "18_product_model_unit_tests"
+    title: "Create Product model unit tests"
+    description: "Write unit tests for Product model CRUD operations"
+    deliverable: "backend/tests/test_product_model.py with comprehensive tests"
+    dependencies: ["17_product_model_creation"]
+    estimate: "15min"
+    testable: "All Product model tests pass"
+
+  - id: "19_cart_model_creation"
+    title: "Create Cart session model class"
+    description: "Implement Cart model class for session-based shopping cart"
+    deliverable: "backend/app/models/cart.py with Cart class"
+    dependencies: ["17_product_model_creation"]
+    estimate: "20min"
+    testable: "Cart model can manage cart items and quantities"
+
+  - id: "20_cart_model_unit_tests"
+    title: "Create Cart model unit tests"
+    description: "Write unit tests for Cart model operations"
+    deliverable: "backend/tests/test_cart_model.py with comprehensive tests"
+    dependencies: ["19_cart_model_creation"]
+    estimate: "15min"
+    testable: "All Cart model tests pass"
+
+  - id: "21_order_model_creation"
+    title: "Create Order data model class"
+    description: "Implement Order model class with customer and item details"
+    deliverable: "backend/app/models/order.py with Order class"
+    dependencies: ["13_user_model_creation", "17_product_model_creation"]
+    estimate: "25min"
+    testable: "Order model can create and save order documents"
+
+  - id: "22_order_model_unit_tests"
+    title: "Create Order model unit tests"
+    description: "Write unit tests for Order model CRUD operations"
+    deliverable: "backend/tests/test_order_model.py with comprehensive tests"
+    dependencies: ["21_order_model_creation"]
+    estimate: "20min"
+    testable: "All Order model tests pass"
+
+  # Phase 4: Basic API Endpoints
+  - id: "23_products_get_all_endpoint"
+    title: "Create GET /api/products endpoint"
+    description: "Implement endpoint to retrieve all active products"
+    deliverable: "GET /api/products route in backend/app/routes/products.py"
+    dependencies: ["17_product_model_creation", "12_basic_api_blueprint"]
+    estimate: "20min"
+    testable: "Endpoint returns products in standard response format"
+
+  - id: "24_products_get_one_endpoint"
+    title: "Create GET /api/products/:id endpoint"
+    description: "Implement endpoint to retrieve single product by ID"
+    deliverable: "GET /api/products/:id route in backend/app/routes/products.py"
+    dependencies: ["23_products_get_all_endpoint"]
+    estimate: "15min"
+    testable: "Endpoint returns single product or 404 error"
+
+  - id: "25_products_endpoints_integration_tests"
+    title: "Create products API integration tests"
+    description: "Write integration tests for products GET endpoints"
+    deliverable: "backend/tests/test_products_api.py with integration tests"
+    dependencies: ["24_products_get_one_endpoint"]
+    estimate: "20min"
+    testable: "All products API integration tests pass"
+
+  - id: "26_categories_get_all_endpoint"
+    title: "Create GET /api/categories endpoint"
+    description: "Implement endpoint to retrieve all active categories"
+    deliverable: "GET /api/categories route in backend/app/routes/categories.py"
+    dependencies: ["15_category_model_creation", "12_basic_api_blueprint"]
+    estimate: "15min"
+    testable: "Endpoint returns categories in standard response format"
+
+  - id: "27_categories_endpoints_integration_tests"
+    title: "Create categories API integration tests"
+    description: "Write integration tests for categories GET endpoints"
+    deliverable: "backend/tests/test_categories_api.py with integration tests"
+    dependencies: ["26_categories_get_all_endpoint"]
+    estimate: "15min"
+    testable: "All categories API integration tests pass"
+
+  - id: "28_cart_add_item_endpoint"
+    title: "Create POST /api/cart endpoint"
+    description: "Implement endpoint to add items to cart session"
+    deliverable: "POST /api/cart route in backend/app/routes/cart.py"
+    dependencies: ["19_cart_model_creation", "12_basic_api_blueprint"]
+    estimate: "25min"
+    testable: "Endpoint adds items to cart session correctly"
+
+  - id: "29_cart_get_contents_endpoint"
+    title: "Create GET /api/cart/:session endpoint"
+    description: "Implement endpoint to retrieve cart contents by session ID"
+    deliverable: "GET /api/cart/:session route in backend/app/routes/cart.py"
+    dependencies: ["28_cart_add_item_endpoint"]
+    estimate: "20min"
+    testable: "Endpoint returns cart contents for session"
+
+  - id: "30_cart_endpoints_integration_tests"
+    title: "Create cart API integration tests"
+    description: "Write integration tests for cart endpoints"
+    deliverable: "backend/tests/test_cart_api.py with integration tests"
+    dependencies: ["29_cart_get_contents_endpoint"]
+    estimate: "20min"
+    testable: "All cart API integration tests pass"
+
+  # Phase 5: SMS Integration
+  - id: "31_sms_service_creation"
+    title: "Create SMS service module"
+    description: "Implement Twilio SMS service with send verification code function"
+    deliverable: "backend/app/services/sms_service.py with send_code function"
+    dependencies: ["07_configuration_loading"]
+    estimate: "25min"
+    testable: "SMS service can send test verification codes via Twilio"
+
+  - id: "32_sms_service_unit_tests"
+    title: "Create SMS service unit tests"
+    description: "Write unit tests for SMS service functions with mocking"
+    deliverable: "backend/tests/test_sms_service.py with comprehensive tests"
+    dependencies: ["31_sms_service_creation"]
+    estimate: "20min"
+    testable: "All SMS service unit tests pass"
+
+  - id: "33_sms_verification_send_endpoint"
+    title: "Create POST /api/sms/verify endpoint"
+    description: "Implement endpoint to send SMS verification code to phone number"
+    deliverable: "POST /api/sms/verify route in backend/app/routes/sms.py"
+    dependencies: ["31_sms_service_creation", "12_basic_api_blueprint"]
+    estimate: "20min"
+    testable: "Endpoint sends SMS and stores verification code"
+
+  - id: "34_sms_verification_confirm_endpoint"
+    title: "Create POST /api/sms/confirm endpoint"
+    description: "Implement endpoint to confirm SMS verification code"
+    deliverable: "POST /api/sms/confirm route in backend/app/routes/sms.py"
+    dependencies: ["33_sms_verification_send_endpoint"]
+    estimate: "20min"
+    testable: "Endpoint validates SMS code and creates session"
+
+  - id: "35_sms_endpoints_integration_tests"
+    title: "Create SMS API integration tests"
+    description: "Write integration tests for SMS verification endpoints"
+    deliverable: "backend/tests/test_sms_api.py with integration tests"
+    dependencies: ["34_sms_verification_confirm_endpoint"]
+    estimate: "25min"
+    testable: "All SMS API integration tests pass"
+
+  - id: "36_sms_rate_limiting"
+    title: "Add SMS rate limiting protection"
+    description: "Implement rate limiting for SMS endpoints (10 SMS/hour per phone)"
+    deliverable: "Rate limiting middleware in backend/app/utils/rate_limiter.py"
+    dependencies: ["35_sms_endpoints_integration_tests"]
+    estimate: "20min"
+    testable: "Rate limiting blocks excessive SMS requests"
+
+  # Phase 6: Order Processing
+  - id: "37_order_service_creation"
+    title: "Create order processing service"
+    description: "Implement business logic for creating orders from cart data"
+    deliverable: "backend/app/services/order_service.py with create_order function"
+    dependencies: ["21_order_model_creation", "19_cart_model_creation"]
+    estimate: "30min"
+    testable: "Order service can create orders from cart with validation"
+
+  - id: "38_order_service_unit_tests"
+    title: "Create order service unit tests"
+    description: "Write unit tests for order processing business logic"
+    deliverable: "backend/tests/test_order_service.py with comprehensive tests"
+    dependencies: ["37_order_service_creation"]
+    estimate: "25min"
+    testable: "All order service unit tests pass"
+
+  - id: "39_orders_create_endpoint"
+    title: "Create POST /api/orders endpoint"
+    description: "Implement endpoint for order creation with SMS verification"
+    deliverable: "POST /api/orders route in backend/app/routes/orders.py"
+    dependencies: ["37_order_service_creation", "34_sms_verification_confirm_endpoint"]
+    estimate: "25min"
+    testable: "Endpoint creates orders with SMS verification requirement"
+
+  - id: "40_orders_endpoints_integration_tests"
+    title: "Create orders API integration tests"
+    description: "Write integration tests for order creation endpoint"
+    deliverable: "backend/tests/test_orders_api.py with integration tests"
+    dependencies: ["39_orders_create_endpoint"]
+    estimate: "20min"
+    testable: "All orders API integration tests pass"
+
+  # Phase 7: Frontend Foundation
+  - id: "41_react_app_basic_setup"
+    title: "Setup basic React application"
+    description: "Create working React app with App.jsx and index.js"
+    deliverable: "frontend/src/App.jsx with basic React app structure"
+    dependencies: ["04_frontend_package_json"]
+    estimate: "15min"
+    testable: "React app starts on port 3000 without errors"
+
+  - id: "42_react_router_setup"
+    title: "Setup React Router"
+    description: "Configure React Router with basic route structure"
+    deliverable: "React Router configuration in App.jsx with placeholder routes"
+    dependencies: ["41_react_app_basic_setup"]
+    estimate: "15min"
+    testable: "React Router navigation works between placeholder pages"
+
+  - id: "43_tailwind_css_configuration"
+    title: "Configure Tailwind CSS"
+    description: "Setup Tailwind CSS with mobile-first configuration"
+    deliverable: "tailwind.config.js and frontend/src/styles/index.css"
+    dependencies: ["42_react_router_setup"]
+    estimate: "15min"
+    testable: "Tailwind CSS classes work correctly in React components"
+
+  - id: "44_api_service_base_setup"
+    title: "Create base API service configuration"
+    description: "Setup axios configuration for backend API communication"
+    deliverable: "frontend/src/services/api.js with base API setup"
+    dependencies: ["41_react_app_basic_setup"]
+    estimate: "15min"
+    testable: "API service can make HTTP requests to backend health endpoint"
+
+  # Phase 8: Core Frontend Components
+  - id: "45_header_component_creation"
+    title: "Create Header component"
+    description: "Implement responsive header with navigation and cart icon"
+    deliverable: "frontend/src/components/common/Header.jsx"
+    dependencies: ["43_tailwind_css_configuration"]
+    estimate: "25min"
+    testable: "Header component renders correctly on mobile and desktop"
+
+  - id: "46_header_component_tests"
+    title: "Create Header component tests"
+    description: "Write React Testing Library tests for Header component"
+    deliverable: "frontend/src/components/common/__tests__/Header.test.jsx"
+    dependencies: ["45_header_component_creation"]
+    estimate: "15min"
+    testable: "All Header component tests pass"
+
+  - id: "47_loading_component_creation"
+    title: "Create Loading component"
+    description: "Implement loading spinner component for async operations"
+    deliverable: "frontend/src/components/common/Loading.jsx"
+    dependencies: ["43_tailwind_css_configuration"]
+    estimate: "10min"
+    testable: "Loading component displays spinner correctly"
+
+  - id: "48_error_message_component_creation"
+    title: "Create ErrorMessage component"
+    description: "Implement error display component with standard styling"
+    deliverable: "frontend/src/components/common/ErrorMessage.jsx"
+    dependencies: ["43_tailwind_css_configuration"]
+    estimate: "10min"
+    testable: "ErrorMessage component displays errors correctly"
+
+  - id: "49_product_card_component_creation"
+    title: "Create ProductCard component"
+    description: "Implement product card for grid display with image, name, price"
+    deliverable: "frontend/src/components/product/ProductCard.jsx"
+    dependencies: ["43_tailwind_css_configuration"]
+    estimate: "20min"
+    testable: "ProductCard displays product information correctly"
+
+  - id: "50_product_card_component_tests"
+    title: "Create ProductCard component tests"
+    description: "Write React Testing Library tests for ProductCard component"
+    deliverable: "frontend/src/components/product/__tests__/ProductCard.test.jsx"
+    dependencies: ["49_product_card_component_creation"]
+    estimate: "15min"
+    testable: "All ProductCard component tests pass"
+
+  - id: "51_product_grid_component_creation"
+    title: "Create ProductGrid component"
+    description: "Implement responsive grid layout for product cards"
+    deliverable: "frontend/src/components/product/ProductGrid.jsx"
+    dependencies: ["49_product_card_component_creation"]
+    estimate: "15min"
+    testable: "ProductGrid renders multiple ProductCard components in responsive grid"
+
+  # Phase 9: Cart Functionality
+  - id: "52_cart_context_creation"
+    title: "Create Cart context for state management"
+    description: "Implement React context for cart state and operations"
+    deliverable: "frontend/src/context/CartContext.jsx"
+    dependencies: ["44_api_service_base_setup"]
+    estimate: "25min"
+    testable: "Cart context manages cart state and API operations"
+
+  - id: "53_cart_context_tests"
+    title: "Create Cart context tests"
+    description: "Write tests for cart context state management"
+    deliverable: "frontend/src/context/__tests__/CartContext.test.jsx"
+    dependencies: ["52_cart_context_creation"]
+    estimate: "20min"
+    testable: "All Cart context tests pass"
+
+  - id: "54_cart_item_component_creation"
+    title: "Create CartItem component"
+    description: "Implement individual cart item with quantity controls and remove button"
+    deliverable: "frontend/src/components/cart/CartItem.jsx"
+    dependencies: ["52_cart_context_creation"]
+    estimate: "20min"
+    testable: "CartItem allows quantity updates and item removal"
+
+  - id: "55_cart_summary_component_creation"
+    title: "Create CartSummary component"
+    description: "Implement cart totals display and checkout button"
+    deliverable: "frontend/src/components/cart/CartSummary.jsx"
+    dependencies: ["52_cart_context_creation"]
+    estimate: "15min"
+    testable: "CartSummary displays correct totals and checkout option"
+
+  # Phase 10: Main Pages
+  - id: "56_home_page_creation"
+    title: "Create Home page"
+    description: "Implement welcome page with featured products and navigation"
+    deliverable: "frontend/src/pages/Home.jsx"
+    dependencies: ["45_header_component_creation", "51_product_grid_component_creation"]
+    estimate: "20min"
+    testable: "Home page displays welcome content and featured products"
+
+  - id: "57_products_page_creation"
+    title: "Create Products page"
+    description: "Implement product listing page with API integration"
+    deliverable: "frontend/src/pages/Products.jsx"
+    dependencies: ["51_product_grid_component_creation", "44_api_service_base_setup"]
+    estimate: "25min"
+    testable: "Products page loads and displays products from API"
+
+  - id: "58_cart_page_creation"
+    title: "Create Cart page"
+    description: "Implement shopping cart page with cart items and summary"
+    deliverable: "frontend/src/pages/Cart.jsx"
+    dependencies: ["54_cart_item_component_creation", "55_cart_summary_component_creation"]
+    estimate: "20min"
+    testable: "Cart page displays cart items and allows modifications"
+
+  # Phase 11: Checkout Flow
+  - id: "59_customer_form_component_creation"
+    title: "Create CustomerForm component"
+    description: "Implement customer information form with validation"
+    deliverable: "frontend/src/components/checkout/CustomerForm.jsx"
+    dependencies: ["43_tailwind_css_configuration", "48_error_message_component_creation"]
+    estimate: "30min"
+    testable: "CustomerForm validates and collects customer information"
+
+  - id: "60_sms_verification_component_creation"
+    title: "Create SMSVerification component"
+    description: "Implement SMS code input and verification interface"
+    deliverable: "frontend/src/components/checkout/SMSVerification.jsx"
+    dependencies: ["44_api_service_base_setup", "47_loading_component_creation"]
+    estimate: "25min"
+    testable: "SMSVerification handles code input and verification with API"
+
+  - id: "61_checkout_page_creation"
+    title: "Create Checkout page"
+    description: "Implement complete checkout flow page with form and SMS verification"
+    deliverable: "frontend/src/pages/Checkout.jsx"
+    dependencies: ["59_customer_form_component_creation", "60_sms_verification_component_creation"]
+    estimate: "30min"
+    testable: "Checkout page guides through complete order process"
+
+  - id: "62_order_confirmation_page_creation"
+    title: "Create OrderConfirmation page"
+    description: "Implement order success page with order details and next steps"
+    deliverable: "frontend/src/pages/OrderConfirmation.jsx"
+    dependencies: ["61_checkout_page_creation"]
+    estimate: "15min"
+    testable: "OrderConfirmation displays order details and success message"
+
+  # Phase 12: Admin Authentication Backend
+  - id: "63_auth_service_creation"
+    title: "Create admin authentication service"
+    description: "Implement admin login, JWT generation, and password verification"
+    deliverable: "backend/app/services/auth_service.py"
+    dependencies: ["13_user_model_creation"]
+    estimate: "25min"
+    testable: "Auth service handles admin login and token generation"
+
+  - id: "64_auth_service_unit_tests"
+    title: "Create auth service unit tests"
+    description: "Write unit tests for authentication service functions"
+    deliverable: "backend/tests/test_auth_service.py with comprehensive tests"
+    dependencies: ["63_auth_service_creation"]
+    estimate: "20min"
+    testable: "All auth service unit tests pass"
+
+  - id: "65_admin_login_endpoint"
+    title: "Create POST /api/auth/login endpoint"
+    description: "Implement admin login endpoint with credentials validation"
+    deliverable: "POST /api/auth/login route in backend/app/routes/auth.py"
+    dependencies: ["63_auth_service_creation", "12_basic_api_blueprint"]
+    estimate: "20min"
+    testable: "Admin login endpoint validates credentials and returns JWT"
+
+  - id: "66_admin_auth_middleware"
+    title: "Create admin authentication middleware"
+    description: "Implement JWT validation middleware for admin routes"
+    deliverable: "backend/app/utils/auth_middleware.py with JWT validation"
+    dependencies: ["65_admin_login_endpoint"]
+    estimate: "20min"
+    testable: "Auth middleware validates JWT tokens correctly"
+
+  - id: "67_auth_endpoints_integration_tests"
+    title: "Create auth API integration tests"
+    description: "Write integration tests for authentication endpoints"
+    deliverable: "backend/tests/test_auth_api.py with integration tests"
+    dependencies: ["66_admin_auth_middleware"]
+    estimate: "20min"
+    testable: "All auth API integration tests pass"
+
+  # Phase 13: Admin Frontend
+  - id: "68_admin_auth_context_creation"
+    title: "Create admin authentication context"
+    description: "Implement admin auth state management in React context"
+    deliverable: "frontend/src/context/AuthContext.jsx"
+    dependencies: ["44_api_service_base_setup"]
+    estimate: "20min"
+    testable: "AuthContext manages admin authentication state"
+
+  - id: "69_admin_login_page_creation"
+    title: "Create AdminLogin page"
+    description: "Implement admin login form with credentials validation"
+    deliverable: "frontend/src/pages/AdminLogin.jsx"
+    dependencies: ["68_admin_auth_context_creation", "48_error_message_component_creation"]
+    estimate: "20min"
+    testable: "Admin login page authenticates admin users via API"
+
+  - id: "70_admin_dashboard_page_creation"
+    title: "Create AdminDashboard page"
+    description: "Implement basic admin dashboard with navigation and overview"
+    deliverable: "frontend/src/pages/AdminDashboard.jsx"
+    dependencies: ["69_admin_login_page_creation"]
+    estimate: "25min"
+    testable: "AdminDashboard displays admin navigation and requires authentication"
+
+  # Phase 14: Admin Product Management Backend
+  - id: "71_admin_product_create_endpoint"
+    title: "Create POST /api/admin/products endpoint"
+    description: "Implement admin endpoint for creating new products"
+    deliverable: "POST /api/admin/products route with admin auth"
+    dependencies: ["66_admin_auth_middleware", "23_products_get_all_endpoint"]
+    estimate: "25min"
+    testable: "Admin can create products with proper authentication"
+
+  - id: "72_admin_product_update_endpoint"
+    title: "Create PUT /api/admin/products/:id endpoint"
+    description: "Implement admin endpoint for updating existing products"
+    deliverable: "PUT /api/admin/products/:id route with admin auth"
+    dependencies: ["71_admin_product_create_endpoint"]
+    estimate: "20min"
+    testable: "Admin can update products with proper authentication"
+
+  - id: "73_admin_product_delete_endpoint"
+    title: "Create DELETE /api/admin/products/:id endpoint"
+    description: "Implement admin endpoint for deleting products (soft delete)"
+    deliverable: "DELETE /api/admin/products/:id route with admin auth"
+    dependencies: ["72_admin_product_update_endpoint"]
+    estimate: "15min"
+    testable: "Admin can delete products with proper authentication"
+
+  - id: "74_admin_product_endpoints_integration_tests"
+    title: "Create admin products API integration tests"
+    description: "Write integration tests for admin product management endpoints"
+    deliverable: "backend/tests/test_admin_products_api.py"
+    dependencies: ["73_admin_product_delete_endpoint"]
+    estimate: "25min"
+    testable: "All admin products API integration tests pass"
+
+  # Phase 15: Admin Product Management Frontend
+  - id: "75_product_manager_component_creation"
+    title: "Create ProductManager component"
+    description: "Implement admin interface for product CRUD operations"
+    deliverable: "frontend/src/components/admin/ProductManager.jsx"
+    dependencies: ["70_admin_dashboard_page_creation", "47_loading_component_creation"]
+    estimate: "35min"
+    testable: "ProductManager allows admin to manage products via API"
+
+  - id: "76_product_manager_component_tests"
+    title: "Create ProductManager component tests"
+    description: "Write tests for admin product management component"
+    deliverable: "frontend/src/components/admin/__tests__/ProductManager.test.jsx"
+    dependencies: ["75_product_manager_component_creation"]
+    estimate: "25min"
+    testable: "All ProductManager component tests pass"
+
+  # Phase 16: Admin Order Management Backend
+  - id: "77_admin_orders_get_endpoint"
+    title: "Create GET /api/admin/orders endpoint"
+    description: "Implement admin endpoint for retrieving all orders"
+    deliverable: "GET /api/admin/orders route with admin auth and filtering"
+    dependencies: ["66_admin_auth_middleware", "39_orders_create_endpoint"]
+    estimate: "20min"
+    testable: "Admin can retrieve orders with filtering options"
+
+  - id: "78_admin_order_update_status_endpoint"
+    title: "Create PUT /api/admin/orders/:id/status endpoint"
+    description: "Implement admin endpoint for updating order status"
+    deliverable: "PUT /api/admin/orders/:id/status route with admin auth"
+    dependencies: ["77_admin_orders_get_endpoint"]
+    estimate: "20min"
+    testable: "Admin can update order status with proper authentication"
+
+  - id: "79_admin_order_endpoints_integration_tests"
+    title: "Create admin orders API integration tests"
+    description: "Write integration tests for admin order management endpoints"
+    deliverable: "backend/tests/test_admin_orders_api.py"
+    dependencies: ["78_admin_order_update_status_endpoint"]
+    estimate: "20min"
+    testable: "All admin orders API integration tests pass"
+
+  # Phase 17: Admin Order Management Frontend
+  - id: "80_order_manager_component_creation"
+    title: "Create OrderManager component"
+    description: "Implement admin interface for viewing and updating orders"
+    deliverable: "frontend/src/components/admin/OrderManager.jsx"
+    dependencies: ["70_admin_dashboard_page_creation", "47_loading_component_creation"]
+    estimate: "30min"
+    testable: "OrderManager allows admin to view and update order status"
+
+  # Phase 18: Category Management
+  - id: "81_admin_category_create_endpoint"
+    title: "Create POST /api/admin/categories endpoint"
+    description: "Implement admin endpoint for creating categories"
+    deliverable: "POST /api/admin/categories route with admin auth"
+    dependencies: ["66_admin_auth_middleware", "26_categories_get_all_endpoint"]
+    estimate: "20min"
+    testable: "Admin can create categories with proper authentication"
+
+  - id: "82_admin_category_update_endpoint"
+    title: "Create PUT /api/admin/categories/:id endpoint"
+    description: "Implement admin endpoint for updating categories"
+    deliverable: "PUT /api/admin/categories/:id route with admin auth"
+    dependencies: ["81_admin_category_create_endpoint"]
+    estimate: "15min"
+    testable: "Admin can update categories with proper authentication"
+
+  - id: "83_admin_category_delete_endpoint"
+    title: "Create DELETE /api/admin/categories/:id endpoint"
+    description: "Implement admin endpoint for deleting categories"
+    deliverable: "DELETE /api/admin/categories/:id route with admin auth"
+    dependencies: ["82_admin_category_update_endpoint"]
+    estimate: "15min"
+    testable: "Admin can delete categories with proper authentication"
+
+  - id: "84_category_manager_component_creation"
+    title: "Create CategoryManager component"
+    description: "Implement admin interface for category management"
+    deliverable: "frontend/src/components/admin/CategoryManager.jsx"
+    dependencies: ["70_admin_dashboard_page_creation"]
+    estimate: "25min"
+    testable: "CategoryManager allows admin to manage categories"
+
+  # Phase 19: Enhanced Features
+  - id: "85_product_search_functionality"
+    title: "Add product search functionality"
+    description: "Implement search by product name in products API and frontend"
+    deliverable: "Search functionality in GET /api/products with query parameter"
+    dependencies: ["57_products_page_creation", "23_products_get_all_endpoint"]
+    estimate: "20min"
+    testable: "Product search returns filtered results"
+
+  - id: "86_product_filter_component_creation"
+    title: "Create ProductFilter component"
+    description: "Implement category filtering and search UI component"
+    deliverable: "frontend/src/components/product/ProductFilter.jsx"
+    dependencies: ["85_product_search_functionality"]
+    estimate: "25min"
+    testable: "ProductFilter allows search and category filtering"
+
+  - id: "87_mobile_responsiveness_components_audit"
+    title: "Mobile responsiveness audit for components"
+    description: "Review and fix mobile compatibility for all core components"
+    deliverable: "Mobile-optimized styles for Header, ProductCard, Cart components"
+    dependencies: ["46_header_component_tests", "50_product_card_component_tests", "55_cart_summary_component_creation"]
+    estimate: "25min"
+    testable: "Core components work correctly on mobile devices (320px-768px)"
+
+  - id: "88_mobile_responsiveness_pages_audit"
+    title: "Mobile responsiveness audit for pages"
+    description: "Review and fix mobile compatibility for all main pages"
+    deliverable: "Mobile-optimized styles for Home, Products, Cart, Checkout pages"
+    dependencies: ["87_mobile_responsiveness_components_audit"]
+    estimate: "25min"
+    testable: "All pages work correctly on mobile devices"
+
+  # Phase 20: Error Handling and Polish
+  - id: "89_comprehensive_error_handling_frontend"
+    title: "Add comprehensive error handling to frontend"
+    description: "Implement error states and user feedback for all API calls"
+    deliverable: "Error handling in all API service calls and user operations"
+    dependencies: ["88_mobile_responsiveness_pages_audit"]
+    estimate: "25min"
+    testable: "Application handles API errors gracefully with user feedback"
+
+  - id: "90_loading_states_implementation"
+    title: "Add loading states to all async operations"
+    description: "Implement loading indicators for all API calls and operations"
+    deliverable: "Loading states in all async operations using Loading component"
+    dependencies: ["89_comprehensive_error_handling_frontend"]
+    estimate: "20min"
+    testable: "Loading states appear during all async operations"
+
+  - id: "91_sms_service_fallback_handling"
+    title: "Add SMS service fallback handling"
+    description: "Implement graceful degradation when SMS service is unavailable"
+    deliverable: "Fallback verification options in SMS service and checkout flow"
+    dependencies: ["36_sms_rate_limiting"]
+    estimate: "25min"
+    testable: "System handles SMS service failures gracefully"
+
+  - id: "92_database_connection_resilience"
+    title: "Add database connection resilience"
+    description: "Implement connection retry logic and graceful error handling"
+    deliverable: "Connection resilience in database.py with retry logic"
+    dependencies: ["09_database_indexes_setup"]
+    estimate: "20min"
+    testable: "System handles database connection issues gracefully"
+
+  # Phase 21: Final Integration and Testing
+  - id: "93_customer_flow_integration_test"
+    title: "Complete customer flow integration test"
+    description: "Test end-to-end customer journey from browsing to order confirmation"
+    deliverable: "E2E test for customer flow: browse → cart → checkout → SMS → order"
+    dependencies: ["90_loading_states_implementation", "62_order_confirmation_page_creation"]
+    estimate: "30min"
+    testable: "Customer can complete full order flow without errors"
+
+  - id: "94_admin_flow_integration_test"
+    title: "Complete admin flow integration test"
+    description: "Test end-to-end admin workflow for product and order management"
+    deliverable: "E2E test for admin flow: login → manage products → process orders"
+    dependencies: ["93_customer_flow_integration_test", "84_category_manager_component_creation", "80_order_manager_component_creation"]
+    estimate: "25min"
+    testable: "Admin can complete full management workflow without errors"
+
+  - id: "95_performance_optimization_audit"
+    title: "Performance optimization audit"
+    description: "Review and optimize API response times and frontend bundle size"
+    deliverable: "Performance optimizations for API queries and frontend assets"
+    dependencies: ["94_admin_flow_integration_test"]
+    estimate: "30min"
+    testable: "All pages load within 3 seconds on mobile networks"
+
+  - id: "96_security_audit_final"
+    title: "Final security audit and validation"
+    description: "Review all security measures, rate limiting, and input validation"
+    deliverable: "Security validation report and any necessary fixes"
+    dependencies: ["95_performance_optimization_audit"]
+    estimate: "25min"
+    testable: "All security measures function correctly and pass validation"
+
+  - id: "97_production_readiness_check"
+    title: "Production readiness final check"
+    description: "Verify all environment configurations, error handling, and deployment readiness"
+    deliverable: "Production readiness checklist completion"
+    dependencies: ["96_security_audit_final", "91_sms_service_fallback_handling", "92_database_connection_resilience"]
+    estimate: "20min"
+    testable: "Application is ready for production deployment with all requirements met"
+
+# Task Execution Notes:
+# - Each task has exactly one deliverable and is independently testable
+# - Dependencies ensure proper task ordering and prevent blocking issues
+# - Test tasks are included throughout to catch issues early
+# - Error handling and resilience tasks address external service failure scenarios
+# - All critical issues from Architect B review have been addressed
+# - Total estimated time: ~21 hours of focused development work
