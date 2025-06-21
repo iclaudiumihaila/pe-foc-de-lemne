@@ -180,8 +180,8 @@ class PerformanceMonitor {
 
   // Send metrics to analytics service
   sendToAnalytics(metric) {
-    if (typeof gtag !== 'undefined') {
-      gtag('event', 'performance_metric', {
+    if (typeof window.gtag !== 'undefined') {
+      window.gtag('event', 'performance_metric', {
         metric_name: metric.name,
         metric_value: Math.round(metric.value),
         custom_map: {

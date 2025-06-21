@@ -323,13 +323,3 @@ export const EventStructuredData = ({ event }) => {
 };
 
 export default StructuredData;
-export {
-  ProductStructuredData,
-  LocalBusinessStructuredData,
-  BreadcrumbStructuredData,
-  FAQStructuredData,
-  ReviewStructuredData,
-  RecipeStructuredData,
-  ArticleStructuredData,
-  EventStructuredData
-};

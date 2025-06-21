@@ -300,7 +300,7 @@ class Analytics {
         ...data,
         user_agent: navigator.userAgent,
         language: navigator.language,
-        screen_resolution: `${screen.width}x${screen.height}`,
+        screen_resolution: `${window.screen.width}x${window.screen.height}`,
         viewport_size: `${window.innerWidth}x${window.innerHeight}`
       }
     };
@@ -355,7 +355,7 @@ class Analytics {
       userAgent: navigator.userAgent,
       language: navigator.language,
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      screen: `${screen.width}x${screen.height}`,
+      screen: `${window.screen.width}x${window.screen.height}`,
       viewport: `${window.innerWidth}x${window.innerHeight}`
     };
 
