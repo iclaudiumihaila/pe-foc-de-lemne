@@ -400,11 +400,13 @@ export const AuthProvider = ({ children }) => {
       api.interceptors.request.eject(requestInterceptor);
       api.interceptors.response.eject(responseInterceptor);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.tokens]);
 
   // Check authentication status on component mount
   useEffect(() => {
     checkAuthStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const contextValue = {

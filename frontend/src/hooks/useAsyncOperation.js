@@ -130,6 +130,7 @@ export const useFormSubmission = (options = {}) => {
 
   const submitForm = useCallback(async (formData, submitFunction) => {
     return asyncOp.execute(submitFunction, formData);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [asyncOp.execute]);
 
   return {
@@ -161,6 +162,7 @@ export const useDataFetching = (options = {}) => {
 
   const fetchData = useCallback(async (fetchFunction, ...args) => {
     return asyncOp.execute(fetchFunction, ...args);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [asyncOp.execute]);
 
   const refetch = useCallback(async (fetchFunction, ...args) => {
@@ -208,6 +210,7 @@ export const useDeleteOperation = (options = {}) => {
     }
 
     return asyncOp.execute(deleteFunction, ...args);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [asyncOp.execute, requireConfirmation, confirmMessage]);
 
   return {
@@ -241,6 +244,7 @@ export const useUpdateOperation = (options = {}) => {
 
   const updateItem = useCallback(async (updateFunction, ...args) => {
     return asyncOp.execute(updateFunction, ...args);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [asyncOp.execute]);
 
   return {
@@ -307,18 +311,22 @@ export const useCartOperation = (options = {}) => {
 
   const addToCart = useCallback(async (addFunction, ...args) => {
     return addOp.execute(addFunction, ...args);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [addOp.execute]);
 
   const removeFromCart = useCallback(async (removeFunction, ...args) => {
     return removeOp.execute(removeFunction, ...args);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [removeOp.execute]);
 
   const updateQuantity = useCallback(async (updateFunction, ...args) => {
     return updateOp.execute(updateFunction, ...args);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [updateOp.execute]);
 
   const clearCart = useCallback(async (clearFunction, ...args) => {
     return clearOp.execute(clearFunction, ...args);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clearOp.execute]);
 
   return {

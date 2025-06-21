@@ -436,7 +436,7 @@ export const generateRobotsTag = (pageType, isPublished = true) => {
   }
 };
 
-export default {
+const seoUtils = {
   generateMetaTags,
   generateStructuredData,
   generateSitemapData,
@@ -450,3 +450,5 @@ export default {
   SEO_CONFIG,
   ROMANIAN_SEO_KEYWORDS
 };
+
+export default seoUtils;

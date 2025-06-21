@@ -10,7 +10,7 @@ import { XMarkIcon, InformationCircleIcon, AdjustmentsHorizontalIcon } from '@he
 import { useAnalytics } from '../../hooks/useAnalytics';
 
 const CookieConsent = () => {
-  const { consentGiven, giveConsent, revokeConsent } = useAnalytics();
+  const { giveConsent, revokeConsent } = useAnalytics();
   const [showBanner, setShowBanner] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [showSettings, setShowSettings] = useState(false);

@@ -114,7 +114,6 @@ const ButtonLoading = ({
       disabled={isDisabled}
       className={buttonClasses}
       aria-label={loading ? loadingText : undefined}
-      role="button"
       {...props}
     >
       {renderContent()}

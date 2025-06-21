@@ -5,7 +5,6 @@ import ProductCard from '../components/product/ProductCard';
 import MetaTags from '../components/SEO/MetaTags';
 import { BreadcrumbStructuredData } from '../components/SEO/StructuredData';
 import { SEO_TEMPLATES } from '../data/seoTemplates';
-import { generateAltText } from '../utils/seo';
 
 const Home = () => {
   const { addToCart, formatPrice } = useCartContext();

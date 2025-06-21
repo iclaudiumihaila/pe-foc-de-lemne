@@ -38,6 +38,7 @@ const SMSVerification = ({
     if (code.length === 6 && !isVerifying) {
       handleVerifyCode(code);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [verificationCode, isVerifying]);
 
   // Format phone number for display (mask middle digits)

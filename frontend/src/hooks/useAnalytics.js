@@ -6,13 +6,12 @@
  */
 
 import { useEffect, useCallback, useRef, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import {
   trackPageView,
   trackCustomEvent,
   trackEcommerceEvent,
   trackProductView,
-  trackAddToCart,
   trackPurchase,
   trackSearch,
   setAnalyticsConsent,
@@ -328,7 +327,6 @@ export const useCheckoutAnalytics = () => {
  */
 export const useUserAnalytics = () => {
   const { consentGiven } = useAnalytics();
-  const sessionStartTime = useRef(Date.now());
   const pageStartTime = useRef(Date.now());
 
   const trackButtonClick = useCallback((buttonName, context = {}) => {

@@ -1,12 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useCartContext } from '../contexts/CartContext';
 import api from '../services/api';
-import Loading, { PageLoading, SectionLoading } from '../components/common/Loading';
-import { ProductGridSkeleton, ProductCardSkeleton } from '../components/common/LoadingSkeleton';
-import ErrorMessage, { NetworkError, ServerError } from '../components/common/ErrorMessage';
-import { SectionErrorBoundary } from '../components/common/ErrorBoundary';
+import { SectionLoading } from '../components/common/Loading';
+import { ProductGridSkeleton } from '../components/common/LoadingSkeleton';
+import ErrorMessage from '../components/common/ErrorMessage';
 import { useApiToast } from '../components/common/Toast';
-import { useDataFetching } from '../hooks/useAsyncOperation';
 import ProductFilter from '../components/product/ProductFilter';
 
 const Products = () => {

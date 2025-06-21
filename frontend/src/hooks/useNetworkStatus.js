@@ -121,6 +121,7 @@ export const useNetworkStatusWithQueue = () => {
       const timer = setTimeout(processQueue, 1000); // Wait 1 second after coming online
       return () => clearTimeout(timer);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [networkStatus.isOnline, requestQueue.length]);
 
   return {

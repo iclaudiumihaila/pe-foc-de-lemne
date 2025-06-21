@@ -3,7 +3,7 @@ import { useNetworkStatus, useConnectionQuality } from '../../hooks/useNetworkSt
 
 const NetworkStatusIndicator = () => {
   const { isOnline, connectionType, isSlowConnection } = useNetworkStatus();
-  const { quality, latency, isGoodConnection } = useConnectionQuality();
+  const { quality, latency } = useConnectionQuality();
   const [showIndicator, setShowIndicator] = useState(false);
   const [indicatorType, setIndicatorType] = useState('offline');
 
