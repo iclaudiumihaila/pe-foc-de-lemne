@@ -10,8 +10,7 @@ import ProductCard from '../components/product/ProductCard';
 
 const Products = () => {
   const { addToCart } = useCartContext();
-  const toastApi = useApiToast();
-  const toast = useMemo(() => toastApi, []);
+  const toast = useApiToast();
   
   // State management
   const [products, setProducts] = useState([]);
@@ -170,7 +169,7 @@ const Products = () => {
       setLoading(false);
       setSearchLoading(false);
     }
-  }, [currentPage, debouncedSearchTerm, selectedCategory, sortBy, sortOrder]);
+  }, [currentPage, debouncedSearchTerm, selectedCategory, sortBy, sortOrder, toast]);
 
   // Initialize categories once on mount
   useEffect(() => {
