@@ -3,18 +3,21 @@ Order Management Routes for Local Producer Web Application
 
 This module provides order management endpoints including order creation with
 cart integration, SMS verification, and admin order management.
+Updated to support phone-based checkout without traditional user accounts.
 """
 
 import logging
 import re
 from datetime import datetime, timedelta
-from flask import Blueprint, request, jsonify, session
+from flask import Blueprint, request, jsonify, session, g, current_app
 from bson import ObjectId
 from app.models.order import Order
 from app.models.product import Product
 from app.models.user import User
+from app.models.customer_phone import CustomerPhone
 from app.services.order_service import get_order_service, OrderValidationError, OrderCreationError
 from app.services.sms_service import get_sms_service
+from app.services.sms_provider import SMSService
 from app.utils.validators import validate_json, validate_phone_number
 from app.utils.error_handlers import (
     ValidationError, AuthorizationError, NotFoundError, SMSError,
@@ -22,23 +25,29 @@ from app.utils.error_handlers import (
 )
 from app.routes.auth import require_auth
 from app.utils.auth_middleware import require_admin_auth, log_admin_action
+from app.utils.checkout_auth import checkout_auth_optional, checkout_auth_required
 
 # Create orders blueprint
 orders_bp = Blueprint('orders', __name__)
 
+# Logger for this module
+logger = logging.getLogger(__name__)
+
 # Admin role decorator
 def require_admin(f):
     """Decorator to require admin role for endpoints."""
+    from functools import wraps
     @require_auth
-    def decorated_function(*args, **kwargs):
+    @wraps(f)
+    def admin_decorated_function(*args, **kwargs):
         user = request.current_user
         if user.role != User.ROLE_ADMIN:
             raise AuthorizationError("Admin access required")
         return f(*args, **kwargs)
-    return decorated_function
+    return admin_decorated_function
 
 
-# Order creation JSON schema for cart-based workflow
+# Order creation JSON schema for phone-based checkout
 ORDER_CREATE_SCHEMA = {
     "type": "object",
     "properties": {
@@ -47,13 +56,18 @@ ORDER_CREATE_SCHEMA = {
             "minLength": 1,
             "description": "Session ID for the shopping cart"
         },
+        "address_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{24}$",
+            "description": "ID of saved address (for authenticated users)"
+        },
         "customer_info": {
             "type": "object",
             "properties": {
                 "phone_number": {
                     "type": "string",
-                    "pattern": "^\\+[1-9]\\d{1,14}$",
-                    "description": "Customer phone number in E.164 format"
+                    "pattern": "^(0|\\+40)7[0-9]{8}$",
+                    "description": "Romanian phone number"
                 },
                 "customer_name": {
                     "type": "string",
@@ -61,10 +75,18 @@ ORDER_CREATE_SCHEMA = {
                     "maxLength": 100,
                     "description": "Customer full name"
                 },
-                "email": {
-                    "type": "string",
-                    "format": "email",
-                    "description": "Customer email address (optional)"
+                "delivery_address": {
+                    "type": "object",
+                    "properties": {
+                        "street": {"type": "string", "minLength": 5, "maxLength": 100},
+                        "city": {"type": "string", "minLength": 2, "maxLength": 50},
+                        "county": {"type": "string", "minLength": 2, "maxLength": 50},
+                        "postal_code": {"type": "string", "pattern": "^[0-9]{6}$"},
+                        "notes": {"type": "string", "maxLength": 200}
+                    },
+                    "required": ["street", "city", "county", "postal_code"],
+                    "additionalProperties": False,
+                    "description": "Delivery address (for guest checkout)"
                 },
                 "special_instructions": {
                     "type": "string",
@@ -72,313 +94,474 @@ ORDER_CREATE_SCHEMA = {
                     "description": "Special delivery instructions (optional)"
                 }
             },
-            "required": ["phone_number", "customer_name"],
+            "required": ["customer_name"],
             "additionalProperties": False
-        },
-        "phone_verification_session_id": {
-            "type": "string",
-            "minLength": 1,
-            "description": "Session ID for phone verification"
         }
     },
-    "required": ["cart_session_id", "customer_info", "phone_verification_session_id"],
+    "required": ["cart_session_id", "customer_info"],
     "additionalProperties": False
 }
 
 
 @orders_bp.route('', methods=['POST'])
+@checkout_auth_optional
 @validate_json(ORDER_CREATE_SCHEMA)
 def create_order():
     """
-    Create new order from cart with SMS verification.
+    Create new order from cart with phone-based checkout.
     
-    Integrates with OrderService for comprehensive business logic validation,
-    cart processing, inventory management, and atomic order creation.
+    Supports both authenticated (with saved addresses) and guest checkout.
+    For authenticated users: Use address_id to select saved address.
+    For guests: Provide phone_number and delivery_address in customer_info.
     
     Required payload:
     - cart_session_id: String
-    - customer_info: Object with phone_number, customer_name, email (optional), special_instructions (optional)
-    - phone_verification_session_id: String
+    - customer_info: Object with customer_name, special_instructions (optional)
+    - address_id: String (for authenticated users)
+    OR
+    - customer_info.phone_number: String (for guests)
+    - customer_info.delivery_address: Object (for guests)
     
     Returns: Order confirmation with order number and details
     """
     try:
         data = request.get_json()
-        
-        # Extract validated data
         cart_session_id = data['cart_session_id']
         customer_info = data['customer_info']
-        phone_verification_session_id = data['phone_verification_session_id']
         
-        # Create order using OrderService
-        order_service = get_order_service()
-        result = order_service.create_order(
-            cart_session_id=cart_session_id,
-            customer_info=customer_info,
-            phone_verification_session_id=phone_verification_session_id
-        )
+        # DEBUG LOGGING
+        logger.info(f"=== ORDER CREATION DEBUG ===")
+        logger.info(f"g.is_authenticated: {getattr(g, 'is_authenticated', 'NOT SET')}")
+        logger.info(f"g.customer_phone: {getattr(g, 'customer_phone', 'NOT SET')}")
+        logger.info(f"g.customer_id: {getattr(g, 'customer_id', 'NOT SET')}")
+        logger.info(f"Request headers Authorization: {request.headers.get('Authorization', 'NOT SET')}")
+        logger.info(f"Cart session ID: {cart_session_id}")
+        logger.info(f"Customer info: {customer_info}")
+        logger.info(f"Address ID in data: {data.get('address_id', 'NOT PROVIDED')}")
         
-        return jsonify(result), 201
+        # Determine checkout flow based on authentication
+        if g.is_authenticated:
+            # Authenticated flow - use saved address
+            address_id = data.get('address_id')
+            if not address_id:
+                return jsonify({
+                    'success': False,
+                    'error': {
+                        'code': 'ADDRESS_REQUIRED',
+                        'message': 'Selectați o adresă de livrare'
+                    }
+                }), 400
+            
+            # Get customer and verify address ownership
+            customer = CustomerPhone.find_by_phone(g.customer_phone)
+            if not customer:
+                return jsonify({
+                    'success': False,
+                    'error': {
+                        'code': 'CUSTOMER_NOT_FOUND',
+                        'message': 'Contul nu a fost găsit'
+                    }
+                }), 404
+            
+            # Find selected address
+            from bson import ObjectId
+            try:
+                address_obj_id = ObjectId(address_id)
+            except Exception as e:
+                logger.error(f"Invalid address ID format: {address_id}")
+                return jsonify({
+                    'success': False,
+                    'error': {
+                        'code': 'INVALID_ADDRESS_ID',
+                        'message': 'ID adresă invalid'
+                    }
+                }), 400
+            selected_address = None
+            for addr in customer.addresses:
+                if addr['_id'] == address_obj_id:
+                    selected_address = addr
+                    break
+            
+            if not selected_address:
+                return jsonify({
+                    'success': False,
+                    'error': {
+                        'code': 'ADDRESS_NOT_FOUND',
+                        'message': 'Adresa selectată nu a fost găsită'
+                    }
+                }), 404
+            
+            # Prepare order data
+            order_phone = customer.phone
+            order_name = customer_info.get('customer_name', customer.name)
+            delivery_address = {
+                'street': selected_address['street'],
+                'city': selected_address['city'],
+                'county': selected_address['county'],
+                'postal_code': selected_address['postal_code'],
+                'notes': selected_address.get('notes', '')
+            }
+            
+            # Mark address as used
+            customer.mark_address_used(address_id)
+            customer.save()
+            
+        else:
+            # Guest flow - validate provided info
+            logger.info(f"=== GUEST FLOW - NOT AUTHENTICATED ===")
+            logger.info(f"Phone number in customer_info: {customer_info.get('phone_number', 'NOT PROVIDED')}")
+            if not customer_info.get('phone_number'):
+                return jsonify({
+                    'success': False,
+                    'error': {
+                        'code': 'PHONE_REQUIRED',
+                        'message': 'Numărul de telefon este obligatoriu pentru comandă'
+                    }
+                }), 400
+            
+            if not customer_info.get('delivery_address'):
+                return jsonify({
+                    'success': False,
+                    'error': {
+                        'code': 'ADDRESS_REQUIRED',
+                        'message': 'Adresa de livrare este obligatorie'
+                    }
+                }), 400
+            
+            # Create/update customer record
+            order_phone = customer_info['phone_number']
+            order_name = customer_info['customer_name']
+            delivery_address = customer_info['delivery_address']
+            
+            # Normalize phone
+            temp_customer = CustomerPhone()
+            order_phone = temp_customer.normalize_phone(order_phone)
+            
+            # Create or update customer
+            customer = CustomerPhone.find_by_phone(order_phone)
+            if customer:
+                # Update name if different
+                if customer.name != order_name:
+                    customer.name = order_name
+                
+                # Check if address already exists
+                address_exists = False
+                for addr in customer.addresses:
+                    if (addr['street'] == delivery_address['street'] and
+                        addr['city'] == delivery_address['city'] and
+                        addr['postal_code'] == delivery_address['postal_code']):
+                        address_exists = True
+                        addr['usage_count'] = addr.get('usage_count', 0) + 1
+                        addr['last_used'] = datetime.utcnow()
+                        break
+                
+                # Add new address if doesn't exist
+                if not address_exists and len(customer.addresses) < CustomerPhone.MAX_ADDRESSES:
+                    from bson import ObjectId
+                    new_address = {
+                        '_id': ObjectId(),
+                        'street': delivery_address['street'],
+                        'city': delivery_address['city'],
+                        'county': delivery_address['county'],
+                        'postal_code': delivery_address['postal_code'],
+                        'notes': delivery_address.get('notes', ''),
+                        'is_default': len(customer.addresses) == 0,
+                        'usage_count': 1,
+                        'last_used': datetime.utcnow(),
+                        'created_at': datetime.utcnow()
+                    }
+                    customer.addresses.append(new_address)
+                
+                # Don't save here, will save after order creation
+            else:
+                # Create new customer
+                from bson import ObjectId
+                customer = CustomerPhone({
+                    'phone': order_phone,
+                    'name': order_name,
+                    'addresses': [{
+                        '_id': ObjectId(),
+                        'street': delivery_address['street'],
+                        'city': delivery_address['city'],
+                        'county': delivery_address['county'],
+                        'postal_code': delivery_address['postal_code'],
+                        'notes': delivery_address.get('notes', ''),
+                        'is_default': True,
+                        'usage_count': 1,
+                        'last_used': datetime.utcnow(),
+                        'created_at': datetime.utcnow()
+                    }]
+                })
+                # Don't save here, will save after order creation
         
-    except OrderValidationError as e:
+        # Get cart items (simplified - should use cart service)
+        from app.database import get_database
+        db = get_database()
+        cart = db.cart_sessions.find_one({'session_id': cart_session_id})
+        
+        if not cart or not cart.get('items'):
+            return jsonify({
+                'success': False,
+                'error': {
+                    'code': 'CART_EMPTY',
+                    'message': 'Coșul de cumpărături este gol'
+                }
+            }), 400
+        
+        # Calculate total
+        total_amount = sum(item['quantity'] * item.get('price', item.get('unit_price', 0)) for item in cart['items'])
+        
+        # Create order
+        from bson import ObjectId
+        from app.services.order_service import OrderService
+        
+        # Use OrderService to generate incremental order number
+        order_service = OrderService()
+        order_number = order_service._generate_order_number()
+        
+        order_data = {
+            'order_number': order_number,
+            'customer_phone': order_phone,
+            'customer_name': order_name,
+            'delivery_address': delivery_address,
+            'items': cart['items'],
+            'total_amount': total_amount,
+            'status': 'pending',
+            'special_instructions': customer_info.get('special_instructions', ''),
+            'created_at': datetime.utcnow()
+        }
+        
+        result = db.orders.insert_one(order_data)
+        order_data['_id'] = result.inserted_id
+        
+        # Update customer order count and save
+        customer.total_orders += 1
+        customer.last_order_date = datetime.utcnow()
+        
+        # Handle concurrent update with retry
+        for retry in range(3):
+            try:
+                customer.save()
+                break
+            except ValueError as e:
+                if "Concurrent update" in str(e) and retry < 2:
+                    # Reload customer and try again
+                    logger.warning(f"Concurrent update detected, retrying ({retry + 1}/3)")
+                    fresh_customer = CustomerPhone.find_by_phone(order_phone)
+                    if fresh_customer:
+                        fresh_customer.total_orders += 1
+                        fresh_customer.last_order_date = datetime.utcnow()
+                        customer = fresh_customer
+                    else:
+                        # Customer was deleted somehow, recreate
+                        customer.total_orders = 1
+                        customer.last_order_date = datetime.utcnow()
+                else:
+                    raise
+        
+        # Clear cart
+        db.carts.delete_one({'session_id': cart_session_id})
+        
+        # Send order confirmation SMS
+        try:
+            SMSService.send_order_confirmation(order_phone, order_data['order_number'])
+        except Exception as e:
+            logger.warning(f"Failed to send order confirmation SMS: {str(e)}")
+        
+        # Return order confirmation
         return jsonify({
-            'success': False,
-            'error': str(e),
-            'error_code': e.error_code,
-            'details': e.details
-        }), 400
-        
-    except OrderCreationError as e:
-        return jsonify({
-            'success': False,
-            'error': str(e),
-            'error_code': e.error_code,
-            'details': e.details
-        }), 500
+            'success': True,
+            'order': {
+                'order_number': order_data['order_number'],
+                'total_amount': total_amount,
+                'status': 'pending',
+                'delivery_address': delivery_address,
+                'estimated_delivery': '24-48 ore'
+            },
+            'message': 'Comandă plasată cu succes!'
+        }), 201
         
     except Exception as e:
-        logging.error(f"Unexpected error creating order: {str(e)}")
+        import traceback
+        logging.error(f"Error creating order: {str(e)}")
+        logging.error(f"Traceback: {traceback.format_exc()}")
         return jsonify({
             'success': False,
-            'error': 'An unexpected error occurred while creating the order',
-            'error_code': 'ORDER_500'
+            'error': {
+                'code': 'ORDER_ERROR',
+                'message': 'Eroare la plasarea comenzii. Încercați din nou.',
+                'debug': str(e) if current_app.config.get('DEBUG') else None
+            }
         }), 500
 
 
 # Legacy order creation endpoint (kept for backward compatibility)
 # Order creation JSON schema for legacy direct order creation
-LEGACY_ORDER_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "customer_phone": {
-            "type": "string",
-            "pattern": "^\\+?[1-9]\\d{1,14}$"
-        },
-        "customer_name": {
-            "type": "string",
-            "minLength": 2,
-            "maxLength": 50
-        },
-        "items": {
-            "type": "array",
-            "minItems": 1,
-            "maxItems": 20,
-            "items": {
-                "type": "object",
-                "properties": {
-                    "product_id": {
-                        "type": "string",
-                        "pattern": "^[0-9a-fA-F]{24}$"
-                    },
-                    "quantity": {
-                        "type": "integer",
-                        "minimum": 1,
-                        "maximum": 100
-                    }
-                },
-                "required": ["product_id", "quantity"],
-                "additionalProperties": False
-            }
-        },
-        "delivery_type": {
-            "type": "string",
-            "enum": ["pickup", "delivery"]
-        },
-        "delivery_address": {
-            "type": ["object", "null"],
-            "properties": {
-                "street": {"type": "string", "maxLength": 100},
-                "city": {"type": "string", "maxLength": 50},
-                "postal_code": {"type": "string", "maxLength": 20},
-                "notes": {"type": "string", "maxLength": 200}
-            },
-            "required": ["street", "city"],
-            "additionalProperties": False
-        },
-        "delivery_phone": {
-            "type": ["string", "null"],
-            "pattern": "^\\+?[1-9]\\d{1,14}$"
-        },
-        "requested_time": {
-            "type": ["string", "null"],
-            "format": "date-time"
-        },
-        "special_instructions": {
-            "type": ["string", "null"],
-            "maxLength": 500
-        },
-        "verification_code": {
-            "type": "string",
-            "pattern": "^\\d{6}$"
-        }
-    },
-    "required": ["customer_phone", "customer_name", "items", "delivery_type", "verification_code"],
-    "additionalProperties": False
-}
-
-
-@orders_bp.route('/legacy', methods=['POST'])
-@validate_json(LEGACY_ORDER_SCHEMA)
-def create_order_legacy():
+@orders_bp.route('/status', methods=['GET'])
+def get_order_status():
     """
-    Legacy order creation endpoint (backward compatibility).
+    Get order status by phone number and order number.
     
-    Direct order creation without cart workflow.
-    Requires SMS verification code to confirm order creation.
-    Validates product availability and calculates totals.
+    No authentication required - customers can check their order status
+    using just their phone number and order number.
+    
+    Query Parameters:
+    - phone: Customer phone number
+    - order_number: Order number (e.g., PFL-20250622-XXXXXXXX)
+    
+    Returns order details with current status and delivery timeline.
     """
     try:
-        data = request.validated_json
+        # Get query parameters
+        phone = request.args.get('phone')
+        order_number = request.args.get('order_number')
+        
+        if not phone:
+            return jsonify({
+                'success': False,
+                'error': {
+                    'code': 'PHONE_REQUIRED',
+                    'message': 'Numărul de telefon este obligatoriu'
+                }
+            }), 400
+        
+        if not order_number:
+            return jsonify({
+                'success': False,
+                'error': {
+                    'code': 'ORDER_NUMBER_REQUIRED',
+                    'message': 'Numărul comenzii este obligatoriu'
+                }
+            }), 400
         
         # Normalize phone number
-        customer_phone = validate_phone_number(data['customer_phone'])
-        
-        # Verify SMS code
-        sms_service = get_sms_service()
-        verification_code = data['verification_code']
-        
-        # For order creation, we expect the verification code to be stored in session
-        # or we need to validate against recent SMS codes
-        # Here we'll validate against the SMS service
+        temp_customer = CustomerPhone()
         try:
-            # Check if verification code is valid for this phone number
-            # Note: This assumes SMS service stores recent codes for validation
-            is_valid = sms_service.validate_recent_code(customer_phone, verification_code)
-            if not is_valid:
-                response, status = create_error_response(
-                    "SMS_002",
-                    "Invalid or expired verification code",
-                    400
-                )
-                return jsonify(response), status
-        except Exception as e:
-            logging.warning(f"SMS verification failed for order: {str(e)}")
-            response, status = create_error_response(
-                "SMS_002", 
-                "Phone verification required",
-                403
-            )
-            return jsonify(response), status
+            normalized_phone = temp_customer.normalize_phone(phone)
+        except Exception:
+            return jsonify({
+                'success': False,
+                'error': {
+                    'code': 'INVALID_PHONE',
+                    'message': 'Format telefon invalid'
+                }
+            }), 400
         
-        # Validate and process items
-        items_data = data['items']
-        processed_items = []
-        total_amount = 0
+        # Find order
+        from app.database import get_database
+        db = get_database()
+        order = db.orders.find_one({
+            'customer_phone': normalized_phone,
+            'order_number': order_number
+        })
         
-        for item in items_data:
-            product = Product.find_by_id(item['product_id'])
-            if not product:
-                response, status = create_error_response(
-                    "VAL_001",
-                    f"Product not found: {item['product_id']}",
-                    400
-                )
-                return jsonify(response), status
-            
-            # Check availability
-            if not product.is_available:
-                response, status = create_error_response(
-                    "VAL_001",
-                    f"Product is not available: {product.name}",
-                    400
-                )
-                return jsonify(response), status
-            
-            # Check stock
-            if product.stock_quantity < item['quantity']:
-                response, status = create_error_response(
-                    "STOCK_001",
-                    f"Insufficient stock for {product.name}. Available: {product.stock_quantity}",
-                    409
-                )
-                return jsonify(response), status
-            
-            # Calculate item total
-            item_total = product.price * item['quantity']
-            total_amount += item_total
-            
-            # Prepare processed item
-            processed_item = {
-                'product_id': product._id,
-                'product_name': product.name,
-                'product_price': float(product.price),
-                'quantity': item['quantity'],
-                'item_total': float(item_total)
+        if not order:
+            return jsonify({
+                'success': False,
+                'error': {
+                    'code': 'ORDER_NOT_FOUND',
+                    'message': 'Comanda nu a fost găsită. Verificați numărul comenzii și telefonul.'
+                }
+            }), 404
+        
+        # Calculate status timeline
+        created_at = order['created_at']
+        now = datetime.utcnow()
+        hours_since_order = (now - created_at).total_seconds() / 3600
+        
+        # Status progression timeline
+        status_timeline = {
+            'pending': {
+                'label': 'În așteptare',
+                'description': 'Comanda a fost primită',
+                'completed': True,
+                'timestamp': created_at.isoformat()
+            },
+            'confirmed': {
+                'label': 'Confirmată',
+                'description': 'Comanda a fost confirmată telefonic',
+                'completed': order['status'] in ['confirmed', 'preparing', 'ready', 'delivering', 'delivered'],
+                'timestamp': order.get('confirmed_at', '').isoformat() if order.get('confirmed_at') else None
+            },
+            'preparing': {
+                'label': 'În preparare',
+                'description': 'Comanda se pregătește',
+                'completed': order['status'] in ['preparing', 'ready', 'delivering', 'delivered'],
+                'timestamp': order.get('preparing_at', '').isoformat() if order.get('preparing_at') else None
+            },
+            'ready': {
+                'label': 'Pregătită',
+                'description': 'Comanda este gata pentru livrare',
+                'completed': order['status'] in ['ready', 'delivering', 'delivered'],
+                'timestamp': order.get('ready_at', '').isoformat() if order.get('ready_at') else None
+            },
+            'delivering': {
+                'label': 'În livrare',
+                'description': 'Comanda este pe drum',
+                'completed': order['status'] in ['delivering', 'delivered'],
+                'timestamp': order.get('delivering_at', '').isoformat() if order.get('delivering_at') else None
+            },
+            'delivered': {
+                'label': 'Livrată',
+                'description': 'Comanda a fost livrată',
+                'completed': order['status'] == 'delivered',
+                'timestamp': order.get('delivered_at', '').isoformat() if order.get('delivered_at') else None
             }
-            processed_items.append(processed_item)
+        }
         
-        # Parse requested time if provided
-        requested_time = None
-        if data.get('requested_time'):
-            try:
-                requested_time = datetime.fromisoformat(data['requested_time'].replace('Z', '+00:00'))
-                # Validate that requested time is in the future
-                if requested_time <= datetime.utcnow():
-                    response, status = create_error_response(
-                        "VAL_001",
-                        "Requested time must be in the future",
-                        400
-                    )
-                    return jsonify(response), status
-            except ValueError:
-                response, status = create_error_response(
-                    "VAL_001",
-                    "Invalid requested time format",
-                    400
-                )
-                return jsonify(response), status
+        # Estimate delivery time
+        if order['status'] == 'delivered':
+            estimated_delivery = None
+            delivery_message = 'Comanda a fost livrată'
+        elif order['status'] == 'cancelled':
+            estimated_delivery = None
+            delivery_message = 'Comanda a fost anulată'
+        elif hours_since_order < 24:
+            estimated_delivery = '24-48 ore'
+            delivery_message = 'Livrare estimată în 24-48 ore'
+        else:
+            estimated_delivery = 'În curând'
+            delivery_message = 'Vă vom contacta pentru confirmare'
         
-        # Create order
-        order = Order.create(
-            customer_phone=customer_phone,
-            customer_name=data['customer_name'],
-            items=processed_items,
-            delivery_type=data['delivery_type'],
-            delivery_address=data.get('delivery_address'),
-            delivery_phone=data.get('delivery_phone'),
-            requested_time=requested_time,
-            special_instructions=data.get('special_instructions')
-        )
+        # Prepare response
+        response_data = {
+            'success': True,
+            'order': {
+                'order_number': order['order_number'],
+                'status': order['status'],
+                'status_label': status_timeline.get(order['status'], {}).get('label', order['status']),
+                'created_at': order['created_at'].isoformat(),
+                'customer_name': order['customer_name'],
+                'phone_masked': f"****{normalized_phone[-4:]}",
+                'total_amount': order.get('total_amount', 0),
+                'items_count': len(order.get('items', [])),
+                'delivery_address': {
+                    'city': order['delivery_address']['city'],
+                    'county': order['delivery_address']['county']
+                    # Don't include full address for privacy
+                },
+                'estimated_delivery': estimated_delivery,
+                'delivery_message': delivery_message,
+                'timeline': status_timeline,
+                'special_instructions': order.get('special_instructions', '')
+            }
+        }
         
-        # Update product stock quantities
-        for item in items_data:
-            product = Product.find_by_id(item['product_id'])
-            if product:
-                product.update_stock(item['quantity'], 'subtract')
+        # Add cancellation reason if cancelled
+        if order['status'] == 'cancelled':
+            response_data['order']['cancellation_reason'] = order.get('cancellation_reason', 'Anulată la cerere')
         
-        # Send order confirmation SMS
-        try:
-            confirmation_message = f"Order confirmed! Order #{order.order_number}. Total: ${order.total:.2f}. We'll notify you when ready."
-            sms_service.send_notification(customer_phone, confirmation_message)
-        except Exception as e:
-            logging.warning(f"Failed to send order confirmation SMS: {str(e)}")
-            # Don't fail the order creation if SMS fails
+        return jsonify(response_data), 200
         
-        # Return created order
-        order_dict = order.to_dict()
-        
-        logging.info(f"Legacy order created: {order.order_number} for {customer_phone[-4:]}")
-        
-        return jsonify(success_response(
-            {'order': order_dict},
-            f"Order created successfully: {order.order_number}"
-        )), 201
-        
-    except ValidationError as e:
-        response, status = create_error_response(
-            "VAL_001",
-            str(e),
-            400
-        )
-        return jsonify(response), status
     except Exception as e:
-        logging.error(f"Error creating legacy order: {str(e)}")
-        response, status = create_error_response(
-            "DB_001",
-            "Failed to create order",
-            500
-        )
-        return jsonify(response), status
+        logger.error(f"Error getting order status: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': {
+                'code': 'SERVER_ERROR',
+                'message': 'Eroare la verificarea comenzii. Încercați din nou.'
+            }
+        }), 500
 
 
 @orders_bp.route('/customer/<phone>', methods=['GET'])

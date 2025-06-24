@@ -22,35 +22,32 @@ const Skeleton = ({
   />
 );
 
-// Product card skeleton
+// Product card skeleton - Minimalist Pinterest style
 export const ProductCardSkeleton = ({ className = '' }) => (
-  <div className={`bg-white rounded-lg shadow-md p-4 ${className}`}>
-    {/* Image skeleton */}
-    <Skeleton height="h-48" className="mb-4" rounded="rounded-lg" />
+  <div className={`bg-white ${className}`}>
+    {/* Image skeleton - variable height */}
+    <Skeleton height="h-64" className="mb-0" rounded="" />
     
-    {/* Title skeleton */}
-    <Skeleton height="h-5" width="w-3/4" className="mb-2" />
-    
-    {/* Description skeleton */}
-    <Skeleton height="h-4" width="w-full" className="mb-1" />
-    <Skeleton height="h-4" width="w-2/3" className="mb-3" />
-    
-    {/* Category badge skeleton */}
-    <Skeleton height="h-5" width="w-1/3" className="mb-3" rounded="rounded-full" />
-    
-    {/* Price and button skeleton */}
-    <div className="flex items-center justify-between">
-      <Skeleton height="h-6" width="w-1/4" />
-      <Skeleton height="h-10" width="w-1/3" rounded="rounded-md" />
+    <div className="p-3 space-y-2">
+      {/* Title skeleton */}
+      <Skeleton height="h-4" width="w-3/4" />
+      
+      {/* Price skeleton */}
+      <Skeleton height="h-5" width="w-1/2" />
+      
+      {/* Button skeleton */}
+      <Skeleton height="h-10" width="w-full" />
     </div>
   </div>
 );
 
-// Product grid skeleton
+// Product grid skeleton - Masonry Pinterest style
 export const ProductGridSkeleton = ({ count = 8, className = '' }) => (
-  <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 ${className}`}>
+  <div className={`masonry-grid ${className}`}>
     {Array.from({ length: count }).map((_, index) => (
-      <ProductCardSkeleton key={index} />
+      <div key={index} className="masonry-item">
+        <ProductCardSkeleton />
+      </div>
     ))}
   </div>
 );

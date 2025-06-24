@@ -1,0 +1,161 @@
+tasks:
+  - id: "109"
+    title: "Install react-swipeable library"
+    description: "Add react-swipeable for handling swipe gestures"
+    deliverable: "Updated package.json with react-swipeable dependency"
+    dependencies: []
+    estimate: "2min"
+    
+  - id: "110"
+    title: "Create SwipeProducts page route"
+    description: "Add new route /products/swipe in App.jsx"
+    deliverable: "New route configured in App.jsx"
+    dependencies: ["109"]
+    estimate: "3min"
+    
+  - id: "111"
+    title: "Create SwipeProductsPage with mobile detection"
+    description: "Main page component that redirects desktop users"
+    deliverable: "SwipeProductsPage.jsx with mobile check"
+    dependencies: ["110"]
+    estimate: "10min"
+    
+  - id: "112"
+    title: "Create ProductCardStack component"
+    description: "Component to render stack of 3 cards with depth effect"
+    deliverable: "ProductCardStack.jsx with styling"
+    dependencies: ["111"]
+    estimate: "15min"
+    
+  - id: "113"
+    title: "Create SwipeableCard wrapper"
+    description: "Wrapper component using react-swipeable for individual cards"
+    deliverable: "SwipeableCard.jsx with swipe handlers"
+    dependencies: ["112"]
+    estimate: "15min"
+    
+  - id: "114"
+    title: "Add swipe animations and physics"
+    description: "CSS animations for card rotation, fade, and spring effects"
+    deliverable: "swipe-animations.css with keyframes"
+    dependencies: ["113"]
+    estimate: "10min"
+    
+  - id: "115"
+    title: "Integrate cart functionality on right swipe"
+    description: "Connect right swipe to addToCart with visual feedback"
+    deliverable: "Working cart addition on swipe right"
+    dependencies: ["113"]
+    estimate: "8min"
+    
+  - id: "116"
+    title: "Add swipe action buttons"
+    description: "Create buttons for skip, add to cart, and undo"
+    deliverable: "SwipeActions.jsx component"
+    dependencies: ["115"]
+    estimate: "10min"
+    
+  - id: "117"
+    title: "Implement undo functionality"
+    description: "Add swipe history and undo last swipe feature"
+    deliverable: "Working undo button that restores last card"
+    dependencies: ["116"]
+    estimate: "10min"
+    
+  - id: "118"
+    title: "Add product preloading logic"
+    description: "Load next batch when 5 cards remaining"
+    deliverable: "Infinite scroll implementation"
+    dependencies: ["117"]
+    estimate: "12min"
+    
+  - id: "119"
+    title: "Create empty state component"
+    description: "Show 'No more products' when stack is empty"
+    deliverable: "Empty state UI in stack"
+    dependencies: ["118"]
+    estimate: "5min"
+    
+  - id: "120"
+    title: "Add swipe indicators overlay"
+    description: "Show NOPE/LIKE overlays during swipe"
+    deliverable: "Visual feedback overlays on cards"
+    dependencies: ["114"]
+    estimate: "8min"
+    
+  - id: "121"
+    title: "Test mobile swipe experience"
+    description: "Test on real mobile device: swipes, animations, cart"
+    deliverable: "Verified working mobile experience"
+    dependencies: ["120"]
+    estimate: "10min"
+    
+  - id: "122"
+    title: "Add navigation link to swipe mode"
+    description: "Add link to /products/swipe from regular products page (mobile only)"
+    deliverable: "Conditional navigation link"
+    dependencies: ["121"]
+    estimate: "5min"
+    
+  - id: "123"
+    title: "Create loading skeleton cards"
+    description: "Skeleton UI for card stack while loading products"
+    deliverable: "SwipeCardSkeleton component"
+    dependencies: ["112"]
+    estimate: "8min"
+    
+  - id: "124"
+    title: "Create product detail modal"
+    description: "Modal that opens on card tap with full product info"
+    deliverable: "SwipeProductDetail.jsx modal component"
+    dependencies: ["113"]
+    estimate: "15min"
+    
+  - id: "125"
+    title: "Add progressive image loading"
+    description: "Implement blur-to-clear image loading with IntersectionObserver"
+    deliverable: "Progressive image loading in cards"
+    dependencies: ["113"]
+    estimate: "10min"
+    
+  - id: "126"
+    title: "Implement analytics tracking"
+    description: "Track swipe events, view time, and session metrics"
+    deliverable: "Analytics events integrated"
+    dependencies: ["115", "124"]
+    estimate: "12min"
+    
+  - id: "127"
+    title: "Add error boundary wrapper"
+    description: "Wrap swipe components in error boundary for crash recovery"
+    deliverable: "SwipeErrorBoundary component"
+    dependencies: ["111"]
+    estimate: "8min"
+    
+  - id: "128"
+    title: "Implement offline cart queue"
+    description: "Queue cart additions when offline, sync when online"
+    deliverable: "Offline support for cart additions"
+    dependencies: ["115"]
+    estimate: "12min"
+    
+  - id: "129"
+    title: "Add keyboard navigation support"
+    description: "Arrow keys for swipe, Enter for details, U for undo"
+    deliverable: "Accessibility keyboard controls"
+    dependencies: ["116"]
+    estimate: "10min"
+    
+  - id: "130"
+    title: "Limit swipe history memory"
+    description: "Cap swipe history at 20 items to prevent memory issues"
+    deliverable: "Memory-efficient undo feature"
+    dependencies: ["117"]
+    estimate: "5min"
+    
+  - id: "131"
+    title: "Add touch capability detection"
+    description: "Enhance mobile detection to check for touch support"
+    deliverable: "Better device detection logic"
+    dependencies: ["111"]
+    estimate: "5min"

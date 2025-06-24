@@ -32,14 +32,23 @@ export const CartProvider = ({ children }) => {
   useEffect(() => {
     const handleStorageChange = (e) => {
       if (e.key === 'cart' && e.newValue !== e.oldValue) {
-        // Cart was updated in another tab - reload the page to sync
-        window.location.reload();
+        // Cart was updated in another tab - sync the cart without reloading
+        try {
+          const newCart = e.newValue ? JSON.parse(e.newValue) : [];
+          console.log('Cart updated in another tab:', newCart);
+          // Directly update the cart state instead of reloading the page
+          if (cartData.cartItems.length !== newCart.length) {
+            cartData.validateCart();
+          }
+        } catch (error) {
+          console.error('Error syncing cart from storage:', error);
+        }
       }
     };
     
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+  }, [cartData]);
   
   return (
     <CartContext.Provider value={cartData}>

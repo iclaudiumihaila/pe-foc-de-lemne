@@ -1,0 +1,184 @@
+/* Add to Cart Animation Styles */
+
+/* Success checkmark animation */
+@keyframes success-check {
+  0% {
+    transform: scale(0) rotate(45deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2) rotate(45deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* Floating indicator animation */
+@keyframes float-up {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-40px);
+    opacity: 0;
+  }
+}
+
+/* Cart icon pulse animation */
+@keyframes pulse-cart {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Glow effect for cart icon */
+@keyframes glow {
+  0% {
+    box-shadow: 0 0 5px rgba(251, 146, 60, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(251, 146, 60, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 5px rgba(251, 146, 60, 0.5);
+  }
+}
+
+/* Button click ripple effect */
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}
+
+/* Cart bounce animation */
+@keyframes cart-bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(-4px);
+  }
+  75% {
+    transform: translateY(2px);
+  }
+}
+
+/* Magic particle animation */
+@keyframes magic-particle {
+  0% {
+    transform: translate(0, 0) scale(0);
+    opacity: 1;
+  }
+  20% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(var(--end-x), var(--end-y)) scale(0);
+    opacity: 0;
+  }
+}
+
+/* Magic burst animation */
+@keyframes magic-burst {
+  0% {
+    transform: scale(0);
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+/* Icon morph animation - smooth 3D rotation */
+@keyframes icon-morph {
+  0% {
+    transform: rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Icon success animation - elegant check appearance */
+@keyframes icon-success {
+  0% {
+    transform: scale(0.3) rotate(45deg);
+    opacity: 0;
+    stroke-dasharray: 0 100;
+  }
+  50% {
+    transform: scale(1.1) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+    stroke-dasharray: 100 100;
+  }
+}
+
+/* Animation utility classes */
+.animate-success-check {
+  animation: success-check 0.6s ease-out forwards;
+}
+
+.animate-icon-morph {
+  animation: icon-morph 0.6s linear infinite;
+}
+
+.animate-icon-success {
+  animation: icon-success 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.animate-float-up {
+  animation: float-up 1s ease-out forwards;
+}
+
+.animate-pulse-cart {
+  animation: pulse-cart 0.6s ease-out;
+}
+
+.animate-glow {
+  animation: glow 0.6s ease-out;
+}
+
+.animate-cart-bounce {
+  animation: cart-bounce 0.4s ease-out;
+}
+
+.animate-magic-burst {
+  animation: magic-burst 0.6s ease-out forwards;
+}
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .animate-success-check,
+  .animate-float-up,
+  .animate-pulse-cart,
+  .animate-glow {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

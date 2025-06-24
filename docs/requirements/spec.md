@@ -282,3 +282,36 @@ Development of a mobile-first web application enabling a local artisanal produce
 - SMS integration reliable and abuse-resistant
 - Database operations optimized and responsive
 - Security measures properly implemented
+
+## 13. UI/UX Enhancements
+
+### 13.1 Add to Cart Animation
+**Added**: 2025-06-23
+
+#### Requirements
+- **FR-042**: Provide immediate visual feedback when a product is added to cart
+- **FR-043**: Animation should be noticeable but not disruptive
+- **FR-044**: Must work consistently across all product views (grid, list, detail)
+- **FR-045**: Should enhance user confidence that the action was successful
+
+#### Proposed Solution
+1. **Button State Animation**: 
+   - Transform "Add to Cart" button to show success state
+   - Show checkmark icon with smooth transition
+   - Return to normal state after 2 seconds
+
+2. **Floating Indicator**:
+   - Show "+1" indicator that floats up from button
+   - Fade out as it rises
+   - Use product-specific quantity if adding multiple
+
+3. **Cart Icon Pulse**:
+   - Subtle pulse/glow effect on cart icon in header
+   - Draws attention to cart count update
+   - Synchronized with button animation
+
+#### Technical Approach
+- CSS animations for smooth performance
+- React state management for animation triggers
+- Reusable component for consistency
+- Accessibility considerations (aria-live regions)

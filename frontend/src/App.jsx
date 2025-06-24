@@ -1,18 +1,22 @@
 import React, { Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { CartProvider } from './contexts/CartContext';
+import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './components/common/Toast';
 import ErrorBoundary from './components/common/ErrorBoundary';
-import Header from './components/common/Header';
 import { PageLoading } from './components/common/Loading';
-import NetworkStatusIndicator from './components/common/NetworkStatusIndicator';
+import ScrollToTop from './components/common/ScrollToTop';
 import MetaTags from './components/SEO/MetaTags';
 import { LocalBusinessStructuredData } from './components/SEO/StructuredData';
 import GoogleAnalytics, { RomanianBusinessAnalytics } from './components/Analytics/GoogleAnalytics';
 import CookieConsent from './components/Analytics/CookieConsent';
+import { FloatingIndicatorManager } from './components/animations/FloatingIndicator';
 import { performanceMonitor } from './utils/performance';
 import { SEO_TEMPLATES } from './data/seoTemplates';
+import PublicLayout from './layouts/PublicLayout';
+import AdminLayout from './layouts/AdminLayout';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 import './styles/index.css';
 
 // Lazy load pages for better performance
@@ -26,6 +30,13 @@ const Home = React.lazy(() =>
 const Products = React.lazy(() => 
   import('./pages/Products').then(module => {
     performanceMonitor.recordMetric('Page Lazy Load', performance.now(), { page: 'Products' });
+    return module;
+  })
+);
+
+const SwipeProducts = React.lazy(() => 
+  import('./pages/SwipeProducts').then(module => {
+    performanceMonitor.recordMetric('Page Lazy Load', performance.now(), { page: 'SwipeProducts' });
     return module;
   })
 );
@@ -51,6 +62,13 @@ const OrderConfirmation = React.lazy(() =>
   })
 );
 
+const TestPhoneVerification = React.lazy(() => 
+  import('./pages/TestPhoneVerification').then(module => {
+    performanceMonitor.recordMetric('Page Lazy Load', performance.now(), { page: 'TestPhoneVerification' });
+    return module;
+  })
+);
+
 const AdminLogin = React.lazy(() => 
   import('./pages/AdminLogin').then(module => {
     performanceMonitor.recordMetric('Page Lazy Load', performance.now(), { page: 'AdminLogin' });
@@ -65,6 +83,41 @@ const AdminDashboard = React.lazy(() =>
   })
 );
 
+const AdminProducts = React.lazy(() => 
+  import('./pages/admin/Products').then(module => {
+    performanceMonitor.recordMetric('Page Lazy Load', performance.now(), { page: 'AdminProducts' });
+    return module;
+  })
+);
+
+const AdminCategories = React.lazy(() => 
+  import('./pages/admin/Categories').then(module => {
+    performanceMonitor.recordMetric('Page Lazy Load', performance.now(), { page: 'AdminCategories' });
+    return module;
+  })
+);
+
+const AdminOrders = React.lazy(() => 
+  import('./pages/admin/Orders').then(module => {
+    performanceMonitor.recordMetric('Page Lazy Load', performance.now(), { page: 'AdminOrders' });
+    return module;
+  })
+);
+
+const AdminOrderDetails = React.lazy(() => 
+  import('./pages/admin/OrderDetails').then(module => {
+    performanceMonitor.recordMetric('Page Lazy Load', performance.now(), { page: 'AdminOrderDetails' });
+    return module;
+  })
+);
+
+const AdminSMSProviders = React.lazy(() => 
+  import('./pages/admin/SMSProviders').then(module => {
+    performanceMonitor.recordMetric('Page Lazy Load', performance.now(), { page: 'AdminSMSProviders' });
+    return module;
+  })
+);
+
 const NotFound = React.lazy(() => 
   import('./pages/NotFound').then(module => {
     performanceMonitor.recordMetric('Page Lazy Load', performance.now(), { page: 'NotFound' });
@@ -72,13 +125,26 @@ const NotFound = React.lazy(() =>
   })
 );
 
+// Conditional cookie consent component
+const ConditionalCookieConsent = () => {
+  const location = window.location.pathname;
+  // Hide cookie consent on swipe page
+  if (location === '/products/swipe') {
+    return null;
+  }
+  return <CookieConsent />;
+};
+
 function App() {
   return (
     <ErrorBoundary>
       <HelmetProvider>
         <ToastProvider>
-          <CartProvider>
-            <Router>
+          <AuthProvider>
+            <CartProvider>
+              <Router>
+                <ScrollToTop />
+              
               {/* Global SEO meta tags */}
               <MetaTags {...SEO_TEMPLATES.home} />
               <LocalBusinessStructuredData />
@@ -90,51 +156,46 @@ function App() {
               />
               <RomanianBusinessAnalytics />
               
-              <div className="page-container font-sans">
-                <Header />
-                <NetworkStatusIndicator />
-                <main className="main-content">
-                  <Suspense fallback={<PageLoading message="Se încarcă pagina..." />}>
-                    <Routes>
-                      <Route path="/" element={<Home />} />
-                      <Route path="/produse" element={<Products />} />
-                      <Route path="/cos" element={<Cart />} />
-                      <Route path="/comanda" element={<Checkout />} />
-                      <Route path="/confirmare-comanda/:orderNumber" element={<OrderConfirmation />} />
-                      <Route path="/admin/login" element={<AdminLogin />} />
-                      <Route path="/admin/dashboard" element={<AdminDashboard />} />
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </Suspense>
-                </main>
-                <footer className="bg-secondary-800 text-white py-8 mt-16">
-                  <div className="max-w-7xl mx-auto px-4 text-center">
-                    <p className="font-semibold">&copy; 2024 Pe Foc de Lemne - Produse Locale Românești</p>
-                    <p className="opacity-80 mt-2">Sprijinind producătorii locali și agricultura durabilă</p>
-                    <div className="mt-4 space-y-2">
-                      <div className="flex justify-center space-x-6 text-sm">
-                        <a href="/termeni" className="hover:text-primary-300 transition-colors">
-                          Termeni și condiții
-                        </a>
-                        <a href="/confidentialitate" className="hover:text-primary-300 transition-colors">
-                          Politica de confidențialitate
-                        </a>
-                        <a href="/contact" className="hover:text-primary-300 transition-colors">
-                          Contact
-                        </a>
-                      </div>
-                      <p className="text-xs opacity-60">
-                        Marketplace pentru produse locale românești de la producători verificați
-                      </p>
-                    </div>
-                  </div>
-                </footer>
-              </div>
+              <Suspense fallback={<PageLoading message="Se încarcă pagina..." />}>
+                <Routes>
+                  {/* Public Routes */}
+                  <Route element={<PublicLayout />}>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/products/swipe" element={<SwipeProducts />} />
+                    <Route path="/products" element={<Products />} />
+                    <Route path="/cart" element={<Cart />} />
+                    <Route path="/comanda" element={<Checkout />} />
+                    <Route path="/confirmare-comanda/:orderNumber" element={<OrderConfirmation />} />
+                    <Route path="/test-phone" element={<TestPhoneVerification />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Route>
+                  
+                  {/* Admin Routes */}
+                  <Route path="/admin/login" element={<AdminLogin />} />
+                  <Route path="/admin" element={
+                    <ProtectedRoute requireAdmin>
+                      <AdminLayout />
+                    </ProtectedRoute>
+                  }>
+                    <Route index element={<Navigate to="/admin/dashboard" replace />} />
+                    <Route path="dashboard" element={<AdminDashboard />} />
+                    <Route path="products" element={<AdminProducts />} />
+                    <Route path="categories" element={<AdminCategories />} />
+                    <Route path="orders" element={<AdminOrders />} />
+                    <Route path="orders/:id" element={<AdminOrderDetails />} />
+                    <Route path="sms-providers" element={<AdminSMSProviders />} />
+                  </Route>
+                </Routes>
+              </Suspense>
               
-              {/* Cookie Consent for GDPR Compliance */}
-              <CookieConsent />
+              {/* Cookie Consent for GDPR Compliance - Hidden on swipe page */}
+              <ConditionalCookieConsent />
+              
+              {/* Floating Indicator Manager for Add to Cart animations */}
+              <FloatingIndicatorManager />
             </Router>
           </CartProvider>
+        </AuthProvider>
         </ToastProvider>
       </HelmetProvider>
     </ErrorBoundary>

@@ -33,7 +33,7 @@ def create_app(config_class=Config):
     app.config.from_object(config_class)
     
     # Initialize database
-    init_mongodb(app)
+    init_mongodb(config_class)
     
     # Register error handlers
     register_error_handlers(app)
@@ -46,6 +46,24 @@ def create_app(config_class=Config):
         level=logging.INFO,
         format='%(asctime)s %(levelname)s %(name)s: %(message)s'
     )
+    
+    # Initialize encryption system
+    try:
+        from app.utils.encryption import initialize_encryption
+        initialize_encryption(
+            master_key=app.config.get('ENCRYPTION_MASTER_KEY'),
+            jwt_secret=app.config.get('JWT_SECRET_KEY')
+        )
+        logging.info("Encryption system initialized successfully")
+    except Exception as e:
+        logging.warning(f"Encryption system initialization failed: {e}")
+    
+    # Initialize SMS system
+    try:
+        from app.utils.sms_init import initialize_sms_system
+        initialize_sms_system()
+    except Exception as e:
+        logging.warning(f"SMS system initialization failed: {e}")
     
     logging.info("Flask application created successfully")
     

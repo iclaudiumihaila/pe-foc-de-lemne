@@ -1,0 +1,149 @@
+# Admin Area Restructuring - Atomic Tasks
+
+tasks:
+  # Phase 1: Layout Foundation
+  - id: "01"
+    slug: "create-public-layout"
+    description: "Create PublicLayout wrapper component"
+    deliverable: "PublicLayout.jsx component that wraps Header and Footer"
+    dependencies: []
+    test: "Renders Header, Outlet, and Footer correctly"
+    
+  - id: "02"
+    slug: "create-admin-layout"
+    description: "Create AdminLayout wrapper component"
+    deliverable: "AdminLayout.jsx component with basic structure"
+    dependencies: []
+    test: "Renders without Header/Footer, includes Outlet"
+    
+  - id: "03"
+    slug: "implement-route-layouts"
+    description: "Update App.jsx to use layout wrappers"
+    deliverable: "Routes wrapped with appropriate layouts"
+    dependencies: ["01", "02"]
+    test: "Public routes show Header, admin routes don't"
+
+  # Phase 2: Admin Navigation Components
+  - id: "04"
+    slug: "create-admin-navbar"
+    description: "Create AdminNavBar component"
+    deliverable: "AdminNavBar.jsx with user info and logout"
+    dependencies: ["02"]
+    test: "Shows admin name and working logout button"
+    
+  - id: "05"
+    slug: "create-admin-sidebar"
+    description: "Create AdminSidebar component"
+    deliverable: "AdminSidebar.jsx with navigation menu"
+    dependencies: ["02"]
+    test: "Shows all menu items with correct links"
+    
+  - id: "06"
+    slug: "integrate-admin-navigation"
+    description: "Add AdminNavBar and AdminSidebar to AdminLayout"
+    deliverable: "AdminLayout with integrated navigation"
+    dependencies: ["04", "05"]
+    test: "Admin pages show both nav components"
+
+  # Phase 3: Admin Dashboard Refactoring
+  - id: "07"
+    slug: "extract-dashboard-navigation"
+    description: "Remove embedded navigation from AdminDashboard"
+    deliverable: "AdminDashboard without its own nav"
+    dependencies: ["06"]
+    test: "Dashboard content displays without duplicate nav"
+    
+  - id: "08"
+    slug: "update-dashboard-layout"
+    description: "Adjust AdminDashboard for new layout structure"
+    deliverable: "Dashboard content properly styled for admin layout"
+    dependencies: ["07"]
+    test: "Dashboard fits well within admin content area"
+
+  # Phase 4: Admin Pages Implementation
+  - id: "09"
+    slug: "create-admin-products-page"
+    description: "Create AdminProducts page component"
+    deliverable: "AdminProducts.jsx with ProductManager"
+    dependencies: ["06"]
+    test: "Products page loads at /admin/products"
+    
+  - id: "10"
+    slug: "create-admin-orders-page"
+    description: "Create AdminOrders page component"
+    deliverable: "AdminOrders.jsx with OrderManager"
+    dependencies: ["06"]
+    test: "Orders page loads at /admin/orders"
+    
+  - id: "11"
+    slug: "create-admin-categories-page"
+    description: "Create AdminCategories page component"
+    deliverable: "AdminCategories.jsx with CategoryManager"
+    dependencies: ["06"]
+    test: "Categories page loads at /admin/categories"
+    
+  - id: "12"
+    slug: "add-admin-routes"
+    description: "Add routes for new admin pages"
+    deliverable: "Routes configured for products, orders, categories"
+    dependencies: ["09", "10", "11"]
+    test: "All admin routes navigate correctly"
+
+  # Phase 5: Styling and Polish
+  - id: "13"
+    slug: "create-admin-styles"
+    description: "Create admin-specific CSS/styling"
+    deliverable: "admin.css with admin theme styles"
+    dependencies: ["06"]
+    test: "Admin area has professional appearance"
+    
+  - id: "14"
+    slug: "implement-active-states"
+    description: "Add active state to sidebar navigation"
+    deliverable: "Sidebar shows current active page"
+    dependencies: ["05"]
+    test: "Current page highlighted in sidebar"
+    
+  - id: "15"
+    slug: "add-mobile-responsiveness"
+    description: "Make admin layout responsive"
+    deliverable: "Collapsible sidebar and mobile-friendly nav"
+    dependencies: ["13"]
+    test: "Admin area works on mobile devices"
+
+  # Phase 6: Authentication Integration
+  - id: "16"
+    slug: "add-admin-route-protection"
+    description: "Protect admin routes with authentication"
+    deliverable: "ProtectedRoute wrapper for admin routes"
+    dependencies: ["03"]
+    test: "Unauthenticated users redirected to login"
+    
+  - id: "17"
+    slug: "update-admin-login-redirect"
+    description: "Ensure login redirects work with new layout"
+    deliverable: "Login redirects to dashboard with admin layout"
+    dependencies: ["16"]
+    test: "Post-login navigation works correctly"
+
+  # Phase 7: Final Integration
+  - id: "18"
+    slug: "update-navigation-links"
+    description: "Update all navigation links to use new routes"
+    deliverable: "All admin links point to correct routes"
+    dependencies: ["12"]
+    test: "All navigation links work"
+    
+  - id: "19"
+    slug: "test-layout-transitions"
+    description: "Test transitions between public and admin"
+    deliverable: "Smooth transitions without flashing"
+    dependencies: ["18"]
+    test: "Moving between layouts works smoothly"
+    
+  - id: "20"
+    slug: "cleanup-old-code"
+    description: "Remove old navigation code from admin components"
+    deliverable: "Clean codebase without duplicate nav code"
+    dependencies: ["19"]
+    test: "No regression in functionality"

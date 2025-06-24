@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear All Data</title>
+</head>
+<body>
+    <h1>Clearing all data...</h1>
+    <script>
+        // Clear all localStorage
+        localStorage.clear();
+        
+        // Clear all sessionStorage
+        sessionStorage.clear();
+        
+        // Clear specific items just to be sure
+        const itemsToRemove = [
+            'checkout_token',
+            'auth_access_token',
+            'adminToken',
+            'authToken',
+            'cartSessionId',
+            'cart',
+            'cartItems',
+            'pe-foc-de-lemne-cart'
+        ];
+        
+        itemsToRemove.forEach(item => {
+            localStorage.removeItem(item);
+            sessionStorage.removeItem(item);
+        });
+        
+        console.log('All data cleared!');
+        
+        // Redirect to home page
+        setTimeout(() => {
+            window.location.href = '/';
+        }, 1000);
+    </script>
+</body>
+</html>

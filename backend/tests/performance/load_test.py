@@ -25,7 +25,7 @@ class LoadTestConfig:
     """Load testing configuration"""
     
     def __init__(self):
-        self.base_url = "http://localhost:8080"
+        self.base_url = "http://localhost:8000"
         self.api_base = f"{self.base_url}/api"
         
         # Test scenarios

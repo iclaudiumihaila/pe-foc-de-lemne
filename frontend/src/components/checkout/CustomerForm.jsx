@@ -17,7 +17,7 @@ const CustomerForm = ({
     county: '',
     postalCode: '',
     notes: '',
-    ...initialData
+    ...(initialData || {})
   });
 
   const [errors, setErrors] = useState({});
@@ -207,7 +207,7 @@ const CustomerForm = ({
 
   // Reset form when initialData changes
   useEffect(() => {
-    if (Object.keys(initialData).length > 0) {
+    if (initialData && Object.keys(initialData).length > 0) {
       setFormData(prev => ({
         ...prev,
         ...initialData

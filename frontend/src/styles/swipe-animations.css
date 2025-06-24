@@ -1,0 +1,317 @@
+/* Swipe Card Animations */
+
+/* Card exit animations */
+@keyframes swipeOutLeft {
+  0% {
+    transform: translateX(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-150%) rotate(-30deg);
+    opacity: 0;
+  }
+}
+
+@keyframes swipeOutRight {
+  0% {
+    transform: translateX(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(150%) rotate(30deg);
+    opacity: 0;
+  }
+}
+
+@keyframes swipeOutUp {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-150%) scale(0.8);
+    opacity: 0;
+  }
+}
+
+/* Spring back animation */
+@keyframes springBack {
+  0% {
+    transform: translateX(var(--delta-x, 0)) translateY(var(--delta-y, 0)) rotate(var(--rotation, 0));
+  }
+  60% {
+    transform: translateX(calc(var(--delta-x, 0) * -0.1)) translateY(0) rotate(0);
+  }
+  100% {
+    transform: translateX(0) translateY(0) rotate(0);
+  }
+}
+
+/* Stack reorder animation */
+@keyframes stackReorder {
+  0% {
+    transform: scale(var(--from-scale)) translateY(var(--from-y));
+    filter: blur(var(--from-blur)) brightness(var(--from-brightness));
+  }
+  100% {
+    transform: scale(var(--to-scale)) translateY(var(--to-y));
+    filter: blur(var(--to-blur)) brightness(var(--to-brightness));
+  }
+}
+
+/* Success pulse for cart addition */
+@keyframes cartSuccessPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+    background-color: rgba(34, 197, 94, 0.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Overlay fade in */
+@keyframes overlayFadeIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Loading skeleton shimmer */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Swipeable card classes */
+.swipeable-card {
+  will-change: transform;
+  touch-action: none; /* Allow both horizontal and vertical touch gestures */
+}
+
+.swipeable-card.swiping {
+  transition: none !important;
+}
+
+.swipeable-card.spring-back {
+  animation: springBack 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.swipeable-card.swipe-out-left {
+  animation: swipeOutLeft 0.5s ease-out forwards;
+}
+
+.swipeable-card.swipe-out-right {
+  animation: swipeOutRight 0.5s ease-out forwards;
+}
+
+.swipeable-card.swipe-out-up {
+  animation: swipeOutUp 0.5s ease-out forwards;
+}
+
+/* Stack card animations */
+.card-stack-item {
+  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.card-stack-item.reordering {
+  animation: stackReorder 0.3s ease-out forwards;
+}
+
+/* Overlay animations */
+.swipe-overlay {
+  transition: opacity 0.2s ease-out;
+  pointer-events: none;
+}
+
+.swipe-overlay-icon {
+  animation: overlayFadeIn 0.3s ease-out;
+}
+
+/* Success feedback */
+.cart-success-feedback {
+  animation: cartSuccessPulse 0.6s ease-out;
+}
+
+/* Loading states */
+.skeleton-loading {
+  background: linear-gradient(
+    90deg,
+    rgba(229, 231, 235, 1) 0%,
+    rgba(229, 231, 235, 0.5) 50%,
+    rgba(229, 231, 235, 1) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Touch feedback */
+.touch-feedback {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Smooth image loading */
+.progressive-image {
+  filter: blur(5px);
+  transition: filter 0.3s ease-out;
+}
+
+.progressive-image.loaded {
+  filter: blur(0);
+}
+
+/* Action button animations */
+.action-button {
+  transition: all 0.2s ease-out;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.action-button:active {
+  transform: scale(0.95);
+}
+
+.action-button:disabled {
+  opacity: 0.5;
+  transform: scale(1);
+}
+
+/* Mobile optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .swipeable-card {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: none !important; /* Ensure touch-action is not overridden on mobile */
+  }
+  
+  /* Ensure the card top is touchable */
+  .swipeable-card-top {
+    touch-action: none !important;
+    pointer-events: auto !important;
+  }
+  
+  /* Larger touch targets */
+  .action-button {
+    min-width: 48px;
+    min-height: 48px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Success indicator animation */
+.cart-success-indicator {
+  animation: successPop 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cart-success-icon {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.5);
+}
+
+@keyframes successPop {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Container glow effect */
+.swipe-products-container {
+  transition: box-shadow 0.4s ease-out;
+  border-radius: 8px;
+}
+
+/* Cart badge animation */
+@keyframes cartBadgePulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-cart-badge {
+  animation: cartBadgePulse 0.6s ease-out;
+}
+
+/* Cart receives item animation */
+@keyframes cartReceiveItem {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.2);
+  }
+  60% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.cart-receive-item {
+  animation: cartReceiveItem 0.6s ease-out;
+}
+
+/* Flying product animation */
+.flying-product {
+  pointer-events: none;
+}
+
+/* Modal slide up animation */
+@keyframes modalSlideUp {
+  0% {
+    transform: translateY(100%);
+  }
+  70% {
+    transform: translateY(-2%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.modal-slide-up {
+  animation: modalSlideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}

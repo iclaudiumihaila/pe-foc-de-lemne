@@ -1,0 +1,146 @@
+# Cart/Order Flow Fix Tasks
+# Generated: 2024-12-24
+# Objective: Fix cart/order integration issues for seamless checkout
+
+tasks:
+  - id: "01_fix_cart_session_format"
+    title: "Fix Cart Session ID Format Compatibility"
+    description: "Align frontend cart ID generation with backend MongoDB ObjectId format"
+    deliverable: "Modified useCart.js to generate MongoDB-compatible session IDs"
+    dependencies: []
+    priority: "critical"
+    changes:
+      - file: "frontend/src/hooks/useCart.js"
+        action: "modify"
+        description: "Change cart ID generation to use MongoDB ObjectId format"
+    
+  - id: "02_add_cart_id_to_context"
+    title: "Expose Cart ID in Cart Context"
+    description: "Ensure cartId is properly exposed from CartContext for checkout"
+    deliverable: "CartContext provides cartId for checkout components"
+    dependencies: ["01_fix_cart_session_format"]
+    priority: "critical"
+    changes:
+      - file: "frontend/src/contexts/CartContext.js"
+        action: "modify"
+        description: "Ensure cartId is included in context value"
+    
+  - id: "03_fix_checkout_cart_reference"
+    title: "Fix Checkout Form Cart Session Reference"
+    description: "Use existing cart ID from context instead of creating new one"
+    deliverable: "CheckoutForm uses correct cart session ID"
+    dependencies: ["02_add_cart_id_to_context"]
+    priority: "critical"
+    changes:
+      - file: "frontend/src/components/checkout/CheckoutForm.jsx"
+        action: "modify"
+        description: "Replace tempCartId generation with cartId from context"
+    
+  - id: "04_implement_cart_backend_sync"
+    title: "Add Backend Cart Synchronization"
+    description: "Create cart on backend when first item is added"
+    deliverable: "Cart exists in backend immediately after first item"
+    dependencies: ["01_fix_cart_session_format"]
+    priority: "high"
+    changes:
+      - file: "frontend/src/hooks/useCart.js"
+        action: "modify"
+        description: "Add API call to create backend cart on first item"
+      - file: "frontend/src/services/api.js"
+        action: "modify"
+        description: "Ensure cart operations use correct session_id format"
+    
+  - id: "05_batch_cart_submission"
+    title: "Implement Atomic Cart Submission"
+    description: "Replace sequential cart item additions with batch operation"
+    deliverable: "All cart items submitted in single API call"
+    dependencies: ["03_fix_checkout_cart_reference"]
+    priority: "high"
+    changes:
+      - file: "frontend/src/components/checkout/CheckoutForm.jsx"
+        action: "modify"
+        description: "Replace item loop with batch cart creation"
+      - file: "backend/app/routes/cart.py"
+        action: "modify"
+        description: "Add batch cart creation endpoint"
+    
+  - id: "06_fix_auth_token_priority"
+    title: "Simplify Authentication Token Logic"
+    description: "Fix token prioritization in API service"
+    deliverable: "Clear token precedence with checkout_token priority"
+    dependencies: []
+    priority: "medium"
+    changes:
+      - file: "frontend/src/services/api.js"
+        action: "modify"
+        description: "Simplify getAuthHeaders to prioritize checkout_token"
+    
+  - id: "07_add_cart_validation"
+    title: "Add Cart Validation Before Order"
+    description: "Validate cart contents and prices before order creation"
+    deliverable: "Cart validation endpoint that checks stock and prices"
+    dependencies: ["04_implement_cart_backend_sync"]
+    priority: "medium"
+    changes:
+      - file: "backend/app/routes/checkout.py"
+        action: "modify"
+        description: "Implement validate-cart endpoint"
+      - file: "frontend/src/components/checkout/CheckoutForm.jsx"
+        action: "modify"
+        description: "Call validation before order submission"
+    
+  - id: "08_improve_error_handling"
+    title: "Enhance Error Handling and Recovery"
+    description: "Add proper error handling with user-friendly messages"
+    deliverable: "Consistent error handling across checkout flow"
+    dependencies: ["05_batch_cart_submission"]
+    priority: "medium"
+    changes:
+      - file: "frontend/src/components/checkout/CheckoutForm.jsx"
+        action: "modify"
+        description: "Add comprehensive error handling"
+      - file: "frontend/src/utils/errorMessages.js"
+        action: "create"
+        description: "Centralized error message translations"
+    
+  - id: "09_add_cart_persistence"
+    title: "Implement Cart Session Persistence"
+    description: "Ensure cart survives page refreshes and browser restarts"
+    deliverable: "Cart rehydrates from backend on app load"
+    dependencies: ["04_implement_cart_backend_sync"]
+    priority: "low"
+    changes:
+      - file: "frontend/src/hooks/useCart.js"
+        action: "modify"
+        description: "Add cart rehydration from backend"
+    
+  - id: "10_add_integration_tests"
+    title: "Create Comprehensive Integration Tests"
+    description: "Add tests for complete cart-to-order flow"
+    deliverable: "Test suite covering all checkout scenarios"
+    dependencies: ["01_fix_cart_session_format", "03_fix_checkout_cart_reference", "05_batch_cart_submission"]
+    priority: "low"
+    changes:
+      - file: "backend/tests/integration/test_cart_order_flow.py"
+        action: "create"
+        description: "Complete flow integration tests"
+      - file: "frontend/src/components/checkout/__tests__/CheckoutForm.test.jsx"
+        action: "create"
+        description: "Frontend checkout component tests"
+
+execution_order:
+  - phase: "critical_fixes"
+    tasks: ["01_fix_cart_session_format", "02_add_cart_id_to_context", "03_fix_checkout_cart_reference"]
+    description: "Immediate fixes to restore basic functionality"
+    
+  - phase: "synchronization"
+    tasks: ["04_implement_cart_backend_sync", "05_batch_cart_submission", "06_fix_auth_token_priority"]
+    description: "Implement proper cart synchronization"
+    
+  - phase: "robustness"
+    tasks: ["07_add_cart_validation", "08_improve_error_handling"]
+    description: "Add validation and error handling"
+    
+  - phase: "enhancement"
+    tasks: ["09_add_cart_persistence", "10_add_integration_tests"]
+    description: "Long-term improvements and testing"

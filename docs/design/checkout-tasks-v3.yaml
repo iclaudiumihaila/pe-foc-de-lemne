@@ -1,0 +1,138 @@
+# Simplified Checkout Implementation Tasks (Revised)
+
+## Phase 1: Backend SMS Configuration
+- id: 01_configure-smso-provider
+  description: Set SMSO as default SMS provider in config.py
+  deliverable: SMS_PROVIDER = 'smso' in config.py
+  
+- id: 02_remove-test-mode-flag
+  description: Remove test_mode flag from SMSO configuration
+  deliverable: test_mode: False in SMSO_CONFIG
+
+- id: 03_update-sms-factory
+  description: Update SMS factory to always return SMSO provider
+  deliverable: Modified get_sms_provider() in sms_init.py
+
+## Phase 2: Customer Model Updates
+- id: 04_add-last-address-field
+  description: Add last_address_id field to customer_phones model
+  deliverable: last_address_id field in CustomerPhone class
+  
+- id: 05_add-name-to-customer
+  description: Add name field to customer_phones collection
+  deliverable: name field in CustomerPhone model
+
+- id: 06_create-address-update-method
+  description: Create method to update last_address_id on address usage
+  deliverable: update_last_address() method
+
+## Phase 3: API Endpoint Updates
+- id: 07_update-send-code-endpoint
+  description: Add name parameter to send-code endpoint
+  deliverable: Modified endpoint accepting name parameter
+  
+- id: 08_update-verify-code-response
+  description: Update verify-code to return customer with last_address
+  deliverable: Response includes customer object with last address
+
+- id: 09_create-cart-validation-endpoint
+  description: Create endpoint to validate cart items and calculate total
+  deliverable: POST /api/checkout/validate-cart endpoint
+
+- id: 10_create-csrf-middleware
+  description: Add CSRF protection middleware for checkout endpoints
+  deliverable: CSRF middleware in checkout_middleware.py
+
+- id: 11_create-order-endpoint
+  description: Create unified order endpoint accepting cart and address
+  deliverable: POST /api/checkout/create-order endpoint
+
+- id: 12_add-address-creation-logic
+  description: Add logic to create address if not provided
+  deliverable: Address creation in order endpoint
+
+## Phase 4: Frontend Phone Verification
+- id: 13_create-phone-input-component
+  description: Create PhoneInput component with formatting
+  deliverable: PhoneInput.jsx component
+  
+- id: 14_create-code-input-component
+  description: Create CodeInput component with auto-submit
+  deliverable: CodeInput.jsx with 6-digit handling
+
+- id: 15_create-phone-verification-form
+  description: Create PhoneVerification form with name field
+  deliverable: PhoneVerification.jsx component
+
+## Phase 5: Frontend Address Components
+- id: 16_create-address-display-card
+  description: Create component to display selected address
+  deliverable: AddressDisplay.jsx component
+  
+- id: 17_create-inline-address-form
+  description: Create compact address form for inline use
+  deliverable: InlineAddressForm.jsx component
+
+- id: 18_create-address-selector
+  description: Create component to handle address logic
+  deliverable: AddressSelector.jsx with conditional rendering
+
+## Phase 6: Frontend Order Components
+- id: 19_create-order-summary-component
+  description: Create component showing cart items and total
+  deliverable: OrderSummary.jsx component
+  
+- id: 20_create-place-order-button
+  description: Create button with loading and error states
+  deliverable: PlaceOrderButton.jsx component
+
+- id: 21_create-order-finalization-component
+  description: Create component combining address and order
+  deliverable: OrderFinalization.jsx component
+
+## Phase 7: Frontend Checkout Page
+- id: 22_create-checkout-container
+  description: Create main checkout page container
+  deliverable: CheckoutPage.jsx skeleton
+  
+- id: 23_add-phone-verification-integration
+  description: Integrate phone verification into checkout
+  deliverable: Phone verification in CheckoutPage
+
+- id: 24_add-order-finalization-integration
+  description: Integrate order finalization into checkout
+  deliverable: Order finalization in CheckoutPage
+
+- id: 25_add-checkout-route
+  description: Add checkout route to React router
+  deliverable: /checkout route in App.jsx
+
+## Phase 8: Cart Integration
+- id: 26_add-cart-validation-hook
+  description: Create hook to validate cart before checkout
+  deliverable: useCartValidation hook
+  
+- id: 27_update-cart-context
+  description: Add cart signature for tampering prevention
+  deliverable: Cart signature in CartContext
+
+- id: 28_add-cart-persistence
+  description: Ensure cart survives page reload
+  deliverable: LocalStorage cart persistence
+
+## Phase 9: Integration Testing
+- id: 29_test-phone-verification-flow
+  description: Test phone verification with real SMS
+  deliverable: Working phone verification
+  
+- id: 30_test-new-customer-order
+  description: Test order placement for new customer
+  deliverable: Successful order with address creation
+
+- id: 31_test-returning-customer-order
+  description: Test order with pre-selected address
+  deliverable: Successful order with existing address
+
+- id: 32_test-error-scenarios
+  description: Test all error cases and edge conditions
+  deliverable: Proper error handling confirmed

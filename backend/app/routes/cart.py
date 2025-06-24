@@ -85,7 +85,10 @@ def add_to_cart():
             cart = Cart.find_by_session_id(session_id)
         
         if not cart:
+            # Create new cart with the provided session_id
             cart = Cart()
+            if session_id:
+                cart.session_id = session_id
         
         # Validate product exists and is available
         product = Product.find_by_id(product_id)

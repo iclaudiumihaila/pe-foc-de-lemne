@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { useCartContext } from '../contexts/CartContext';
 import api from '../services/api';
 import { SectionLoading } from '../components/common/Loading';
@@ -6,6 +7,8 @@ import { ProductGridSkeleton } from '../components/common/LoadingSkeleton';
 import ErrorMessage from '../components/common/ErrorMessage';
 import { useApiToast } from '../components/common/Toast';
 import ProductFilter from '../components/product/ProductFilter';
+import ProductCard from '../components/product/ProductCard';
+import { Layers } from 'lucide-react';
 
 const Products = () => {
   const { addToCart } = useCartContext();
@@ -33,6 +36,42 @@ const Products = () => {
   // Search metadata
   const [searchActive, setSearchActive] = useState(false);
   const [searchResultCount, setSearchResultCount] = useState(0);
+  
+  // Mobile detection
+  const [isMobile, setIsMobile] = useState(false);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      const touchDevice = ('ontouchstart' in window) || 
+        (navigator.maxTouchPoints > 0) ||
+        (navigator.msMaxTouchPoints > 0);
+      setIsMobile(touchDevice && window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Transform API product data to ProductCard format
+  const transformProduct = (apiProduct) => {
+    return {
+      id: apiProduct.id,
+      name: apiProduct.name,
+      price: apiProduct.price,
+      image: apiProduct.images && apiProduct.images.length > 0 
+        ? apiProduct.images[0] 
+        : '/images/placeholder-product.jpg',
+      description: apiProduct.description,
+      category: apiProduct.category?.name || 'General',
+      unit: apiProduct.unit || 'bucată',
+      inStock: apiProduct.is_available !== false && apiProduct.stock_quantity > 0,
+      stock_quantity: apiProduct.stock_quantity,
+      quantity: 1
+    };
+  };
 
   // Debounce search term
   useEffect(() => {
@@ -75,7 +114,7 @@ const Products = () => {
       
       const params = new URLSearchParams({
         page: currentPage.toString(),
-        limit: '12',
+        limit: '20',
         available_only: 'true',
         sort_by: sortBy,
         sort_order: sortOrder
@@ -131,19 +170,26 @@ const Products = () => {
     }
   }, [currentPage, debouncedSearchTerm, selectedCategory, sortBy, sortOrder, toast]);
 
-  // Initialize data
+  // Initialize categories once on mount
   useEffect(() => {
     fetchCategories();
-  }, [fetchCategories]);
+  }, []); // Empty dependency array - only run once
 
-  // Fetch products when filters change
+  // Fetch products when filters or page changes
   useEffect(() => {
-    setCurrentPage(1); // Reset to first page when filters change
+    // Skip if we're in the middle of changing filters
+    if (currentPage === 1 || !loading) {
+      fetchProducts();
+    }
+  }, [currentPage, debouncedSearchTerm, selectedCategory, sortBy, sortOrder]);
+
+  // Reset to first page when filters change (but not on initial mount)
+  useEffect(() => {
+    const isInitialMount = currentPage === 1 && !debouncedSearchTerm && !selectedCategory;
+    if (!isInitialMount) {
+      setCurrentPage(1);
+    }
   }, [debouncedSearchTerm, selectedCategory, sortBy, sortOrder]);
-
-  useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
 
   // Clear search
   const clearSearch = () => {
@@ -169,42 +215,103 @@ const Products = () => {
   };
 
   // Handle add to cart
-  const handleAddToCart = async (product) => {
+  const handleAddToCart = async (product, quantity) => {
     try {
-      await addToCart(product, 1);
+      console.log('Adding to cart:', product, 'Quantity:', quantity);
+      await addToCart(product, quantity || product.quantity || 1);
+      // No toast - visual feedback only
     } catch (err) {
       console.error('Error adding to cart:', err);
+      // Silent error - button will show normal state
     }
   };
 
-  // Format price for display
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('ro-RO', {
-      style: 'currency',
-      currency: 'RON'
-    }).format(price);
-  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-900">Produse Locale</h1>
-            <p className="mt-2 text-gray-600">
-              Descoperiți produsele locale de calitate de la producătorii din România
-            </p>
+    <div className="min-h-screen bg-white">
+      <div className="max-w-7xl mx-auto py-2">
+        {/* Header */}
+        <div className="mb-4 sm:mb-6">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">Produse</h1>
+              <p className="mt-1 text-sm text-gray-500">
+                Produse locale de calitate de la producători verificați
+              </p>
+            </div>
+            {/* Mobile action buttons */}
+            {isMobile && (
+              <div className="flex items-center gap-2 ml-4">
+                {/* Search button */}
+                <button
+                  onClick={() => setShowMobileSearch(!showMobileSearch)}
+                  className="p-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                  aria-label="Căutare"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </button>
+                {/* Filter button */}
+                <button
+                  onClick={() => setShowMobileFilters(!showMobileFilters)}
+                  className="p-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors relative"
+                  aria-label="Filtre"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                  </svg>
+                  {/* Active filters badge */}
+                  {(selectedCategory || (searchTerm && searchTerm.trim())) && (
+                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-600 rounded-full"></span>
+                  )}
+                </button>
+              </div>
+            )}
           </div>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Product Filter Component */}
-        <div className="mb-8">
+        {/* Mobile Search Bar - Slides down when activated */}
+        {isMobile && (
+          <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
+            showMobileSearch ? 'max-h-20 mb-4' : 'max-h-0'
+          }`}>
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Căutați produse..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
+                autoFocus={showMobileSearch}
+              />
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              {searchTerm && (
+                <button
+                  onClick={() => {
+                    setSearchTerm('');
+                    setDebouncedSearchTerm('');
+                  }}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Product Filter Component - Hidden on mobile when using icon approach */}
+        <div className={isMobile ? 'hidden' : 'mb-8'}>
           <ProductFilter
             // Filter state
-            searchTerm={debouncedSearchTerm}
+            searchTerm={searchTerm}
             selectedCategory={selectedCategory}
             sortBy={sortBy}
             sortOrder={sortOrder}
@@ -278,65 +385,27 @@ const Products = () => {
               </div>
             ) : (
               <>
-                {/* Products Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-                  {products.map((product) => (
-                    <div key={product.id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                      <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-t-lg bg-gray-200">
-                        {product.images && product.images.length > 0 ? (
-                          <img
-                            src={product.images[0]}
-                            alt={product.name}
-                            className="h-48 w-full object-cover object-center"
-                            onError={(e) => {
-                              e.target.src = '/images/placeholder-product.jpg';
-                            }}
-                          />
-                        ) : (
-                          <div className="h-48 w-full bg-gray-200 flex items-center justify-center">
-                            <svg className="h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                          </div>
-                        )}
-                      </div>
+                {/* Products Masonry Grid - Pinterest Style */}
+                <div className="relative w-full">
+                  <div className="masonry-grid">
+                    {products.map((product) => {
+                      const transformedProduct = transformProduct(product);
                       
-                      <div className="p-4">
-                        <h3 className="text-lg font-medium text-gray-900 mb-1">{product.name}</h3>
-                        <p className="text-sm text-gray-600 mb-2 line-clamp-2">{product.description}</p>
-                        
-                        {product.category && (
-                          <span className="inline-block bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full mb-2">
-                            {product.category.name}
-                          </span>
-                        )}
-                        
-                        <div className="flex items-center justify-between">
-                          <span className="text-xl font-bold text-green-600">
-                            {formatPrice(product.price)}
-                          </span>
-                          
-                          <button
-                            onClick={() => handleAddToCart(product)}
-                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
-                          >
-                            Adaugă în coș
-                          </button>
-                        </div>
-                        
-                        {product.stock_quantity < 10 && product.stock_quantity > 0 && (
-                          <p className="text-sm text-orange-600 mt-2">
-                            Doar {product.stock_quantity} în stoc
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                      return (
+                        <ProductCard 
+                          key={product.id}
+                          product={transformedProduct}
+                          onAddToCart={handleAddToCart}
+                          className="masonry-item"
+                        />
+                      );
+                    })}
+                  </div>
                 </div>
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                  <div className="flex items-center justify-center space-x-2">
+                  <div className="flex items-center justify-center space-x-2 mt-8">
                     <button
                       onClick={() => handlePageChange(currentPage - 1)}
                       disabled={currentPage === 1}
@@ -376,6 +445,101 @@ const Products = () => {
           </>
         )}
       </div>
+      
+      {/* Mobile Filters Modal */}
+      {isMobile && showMobileFilters && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end"
+          onClick={() => setShowMobileFilters(false)}
+        >
+          <div 
+            className="bg-white w-full rounded-t-2xl max-h-[80vh] overflow-hidden animate-slide-up"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-4 border-b">
+              <h3 className="text-lg font-semibold">Filtre și Sortare</h3>
+              <button
+                onClick={() => setShowMobileFilters(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            {/* Modal Content */}
+            <div className="p-4 space-y-6 overflow-y-auto max-h-[calc(80vh-80px)]">
+              {/* Categories */}
+              <div>
+                <h4 className="text-sm font-medium text-gray-700 mb-3">Categorii</h4>
+                <div className="space-y-2">
+                  <button
+                    onClick={() => {
+                      setSelectedCategory('');
+                      setShowMobileFilters(false);
+                    }}
+                    className={`w-full text-left px-4 py-2 rounded-lg transition-colors ${
+                      selectedCategory === '' 
+                        ? 'bg-green-600 text-white' 
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    Toate produsele
+                  </button>
+                  {categories.map((category) => (
+                    <button
+                      key={category.id}
+                      onClick={() => {
+                        setSelectedCategory(category.id);
+                        setShowMobileFilters(false);
+                      }}
+                      className={`w-full text-left px-4 py-2 rounded-lg transition-colors ${
+                        selectedCategory === category.id 
+                          ? 'bg-green-600 text-white' 
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {category.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Sort Options */}
+              <div>
+                <h4 className="text-sm font-medium text-gray-700 mb-3">Sortare</h4>
+                <div className="space-y-2">
+                  {[
+                    { value: 'name-asc', label: 'Nume (A-Z)' },
+                    { value: 'name-desc', label: 'Nume (Z-A)' },
+                    { value: 'price-asc', label: 'Preț crescător' },
+                    { value: 'price-desc', label: 'Preț descrescător' },
+                    { value: 'created_at-desc', label: 'Cele mai noi' }
+                  ].map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => {
+                        const [field, order] = option.value.split('-');
+                        handleSortChange(field, order);
+                        setShowMobileFilters(false);
+                      }}
+                      className={`w-full text-left px-4 py-2 rounded-lg transition-colors ${
+                        `${sortBy}-${sortOrder}` === option.value
+                          ? 'bg-green-600 text-white' 
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Base configuration
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080/api';
+// Base configuration - use the same host as the frontend
+const API_BASE_URL = `${window.location.protocol}//${window.location.hostname}:8000/api`;
 const API_TIMEOUT = 10000; // 10 seconds
 
 // Romanian error messages
@@ -32,6 +32,9 @@ const retryConfig = {
   retryableStatusCodes: [408, 429, 502, 503, 504],
   retryableNetworkErrors: ['ECONNABORTED', 'ENOTFOUND', 'ECONNRESET']
 };
+
+// Request deduplication cache
+const pendingRequests = new Map();
 
 // Enhanced error class
 class ApiError extends Error {
@@ -66,11 +69,21 @@ api.interceptors.request.use(
       _t: Date.now()
     };
     
-    // Add any auth tokens here in the future
-    // const token = localStorage.getItem('authToken');
-    // if (token) {
-    //   config.headers.Authorization = `Bearer ${token}`;
-    // }
+    // Add auth tokens
+    const adminToken = localStorage.getItem('auth_access_token');
+    const authToken = localStorage.getItem('authToken');
+    const checkoutToken = localStorage.getItem('checkout_token');
+    
+    // Prioritize checkout token for checkout endpoints and order creation
+    if ((config.url?.includes('/checkout/') || (config.url?.includes('/orders') && !config.url?.includes('/admin/'))) && checkoutToken) {
+      config.headers.Authorization = `Bearer ${checkoutToken}`;
+    } else if (adminToken) {
+      config.headers.Authorization = `Bearer ${adminToken}`;
+    } else if (authToken) {
+      config.headers.Authorization = `Bearer ${authToken}`;
+    } else if (checkoutToken) {
+      config.headers.Authorization = `Bearer ${checkoutToken}`;
+    }
     
     console.log('API Request:', {
       method: config.method?.toUpperCase(),
@@ -99,7 +112,9 @@ const createApiError = (error) => {
     isRetryable = retryConfig.retryableStatusCodes.includes(status);
     
     // Try to get Romanian message from server response
-    if (error.response.data?.message) {
+    if (error.response.data?.error?.message) {
+      message = error.response.data.error.message;
+    } else if (error.response.data?.message) {
       message = error.response.data.message;
     }
   } else if (error.code === 'ECONNABORTED') {
@@ -177,17 +192,42 @@ api.interceptors.response.use(
   }
 );
 
-// Enhanced API methods with retry logic
+// Request deduplication helper
+const deduplicatedRequest = async (requestConfig) => {
+  const requestKey = `${requestConfig.method}:${requestConfig.url}`;
+  
+  // Check if there's already a pending request for this endpoint
+  if (pendingRequests.has(requestKey)) {
+    console.log(`Deduplicating request: ${requestKey}`);
+    return pendingRequests.get(requestKey);
+  }
+  
+  // Create the request promise
+  const requestPromise = retryRequest(requestConfig)
+    .finally(() => {
+      // Remove from pending requests when done
+      pendingRequests.delete(requestKey);
+    });
+  
+  // Store in pending requests
+  pendingRequests.set(requestKey, requestPromise);
+  
+  return requestPromise;
+};
+
+// Enhanced API methods with retry logic and deduplication
 const enhancedApi = {
   async get(url, config = {}) {
-    return retryRequest({ ...config, method: 'get', url });
+    return deduplicatedRequest({ ...config, method: 'get', url });
   },
   
   async post(url, data, config = {}) {
+    // Don't deduplicate POST requests as they might have different data
     return retryRequest({ ...config, method: 'post', url, data });
   },
   
   async put(url, data, config = {}) {
+    // Don't deduplicate PUT requests as they might have different data
     return retryRequest({ ...config, method: 'put', url, data });
   },
   
@@ -196,6 +236,7 @@ const enhancedApi = {
   },
   
   async patch(url, data, config = {}) {
+    // Don't deduplicate PATCH requests as they might have different data
     return retryRequest({ ...config, method: 'patch', url, data });
   }
 };

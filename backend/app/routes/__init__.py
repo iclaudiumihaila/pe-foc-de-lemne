@@ -19,6 +19,8 @@ from .cart import cart_bp
 from .sms import sms_bp
 from .sitemap import sitemap_bp
 from .analytics import analytics_bp
+from .checkout import checkout_bp
+from .admin import admin_bp
 
 # Create API blueprint
 api = Blueprint('api', __name__, url_prefix='/api')
@@ -97,7 +99,7 @@ def register_routes(app):
     Args:
         app (Flask): Flask application instance
     """
-    app.register_blueprint(api)
+    # Register sub-blueprints to api blueprint BEFORE registering api to app
     api.register_blueprint(auth_bp, url_prefix='/auth')
     api.register_blueprint(products_bp, url_prefix='/products')
     api.register_blueprint(categories_bp, url_prefix='/categories')
@@ -105,6 +107,13 @@ def register_routes(app):
     api.register_blueprint(cart_bp, url_prefix='/cart')
     api.register_blueprint(sms_bp, url_prefix='/sms')
     api.register_blueprint(analytics_bp, url_prefix='/analytics')
+    api.register_blueprint(checkout_bp, url_prefix='/checkout')
+    
+    # Now register the api blueprint with all its sub-blueprints
+    app.register_blueprint(api)
+    
+    # Register admin blueprint separately (it already has /api/admin prefix)
+    app.register_blueprint(admin_bp)
     
     # Register sitemap routes at root level (not under /api)
     app.register_blueprint(sitemap_bp)

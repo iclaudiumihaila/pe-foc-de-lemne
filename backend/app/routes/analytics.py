@@ -12,7 +12,7 @@ from flask import Blueprint, request, jsonify, Response
 from typing import Dict, List, Any
 from app.models.analytics import (
     AnalyticsEvent, EcommerceEvent, PerformanceMetric, 
-    UserJourneyStep, BusinessKPI, analytics_repo
+    UserJourneyStep, BusinessKPI, get_analytics_repo
 )
 from app.utils.error_handlers import (
     success_response, create_error_response, ValidationError
@@ -61,7 +61,7 @@ def store_analytics_events():
             try:
                 # Create analytics event
                 event = create_analytics_event_from_data(event_data)
-                event_id = analytics_repo.store_event(event)
+                event_id = get_analytics_repo().store_event(event)
                 stored_events.append(event_id)
                 
             except Exception as e:
@@ -127,7 +127,7 @@ def track_business_metrics():
             additional_data=data.get('additional_data', {})
         )
         
-        kpi_id = analytics_repo.store_business_kpi(kpi)
+        kpi_id = get_analytics_repo().store_business_kpi(kpi)
         
         logging.info(f"Business metric tracked: {kpi.kpi_name} = {kpi.kpi_value}")
         
@@ -173,7 +173,7 @@ def track_user_journey():
             data=data.get('data', {})
         )
         
-        step_id = analytics_repo.store_journey_step(step)
+        step_id = get_analytics_repo().store_journey_step(step)
         
         return jsonify(success_response(
             {'step_id': step_id},
@@ -217,7 +217,7 @@ def track_performance():
             device_type=data.get('device_type', '')
         )
         
-        metric_id = analytics_repo.store_performance_metric(metric)
+        metric_id = get_analytics_repo().store_performance_metric(metric)
         
         return jsonify(success_response(
             {'metric_id': metric_id},
@@ -263,7 +263,7 @@ def track_conversion():
             data=data.get('additional_data', {})
         )
         
-        event_id = analytics_repo.store_event(event)
+        event_id = get_analytics_repo().store_event(event)
         
         return jsonify(success_response(
             {'event_id': event_id},
@@ -296,18 +296,18 @@ def get_dashboard_data():
         start_date, end_date = parse_time_range(time_range)
         
         # Get analytics summary
-        summary = analytics_repo.get_analytics_summary(start_date, end_date)
+        summary = get_analytics_repo().get_analytics_summary(start_date, end_date)
         
         # Get Romanian marketplace metrics
-        marketplace_metrics = analytics_repo.get_romanian_marketplace_metrics(start_date, end_date)
+        marketplace_metrics = get_analytics_repo().get_romanian_marketplace_metrics(start_date, end_date)
         
         # Get conversion funnel
-        conversion_funnel = analytics_repo.get_conversion_funnel(start_date, end_date)
+        conversion_funnel = get_analytics_repo().get_conversion_funnel(start_date, end_date)
         
         # Get performance metrics if requested
         performance_data = []
         if 'performance' in metrics:
-            performance_data = analytics_repo.get_performance_metrics({
+            performance_data = get_analytics_repo().get_performance_metrics({
                 'start_date': start_date,
                 'end_date': end_date
             }, limit=1000)
@@ -315,7 +315,7 @@ def get_dashboard_data():
         # Get business KPIs if requested
         kpi_data = []
         if 'kpis' in metrics:
-            kpi_data = analytics_repo.get_business_kpis({
+            kpi_data = get_analytics_repo().get_business_kpis({
                 'start_date': start_date,
                 'end_date': end_date
             })
@@ -360,14 +360,14 @@ def get_realtime_data():
         start_time = end_time - timedelta(minutes=30)
         
         # Get recent events
-        recent_events = analytics_repo.get_events({
+        recent_events = get_analytics_repo().get_events({
             'start_date': start_time,
             'end_date': end_time
         }, limit=100)
         
         # Get active sessions (last 5 minutes)
         active_start = end_time - timedelta(minutes=5)
-        active_events = analytics_repo.get_events({
+        active_events = get_analytics_repo().get_events({
             'start_date': active_start,
             'end_date': end_time
         }, limit=50)
@@ -380,7 +380,7 @@ def get_realtime_data():
         
         # Get performance metrics from last hour
         perf_start = end_time - timedelta(hours=1)
-        performance_metrics = analytics_repo.get_performance_metrics({
+        performance_metrics = get_analytics_repo().get_performance_metrics({
             'start_date': perf_start,
             'end_date': end_time
         }, limit=100)
@@ -442,7 +442,7 @@ def track_romanian_kpis():
                 category='business',
                 additional_data=data.get('business_context', {})
             )
-            kpi_ids.append(analytics_repo.store_business_kpi(kpi))
+            kpi_ids.append(get_analytics_repo().store_business_kpi(kpi))
         
         # Local product popularity
         if 'local_product_score' in data:
@@ -456,7 +456,7 @@ def track_romanian_kpis():
                 category='product',
                 additional_data=data.get('business_context', {})
             )
-            kpi_ids.append(analytics_repo.store_business_kpi(kpi))
+            kpi_ids.append(get_analytics_repo().store_business_kpi(kpi))
         
         # Romanian customer satisfaction
         if 'customer_satisfaction' in data:
@@ -470,7 +470,7 @@ def track_romanian_kpis():
                 category='customer',
                 additional_data=data.get('business_context', {})
             )
-            kpi_ids.append(analytics_repo.store_business_kpi(kpi))
+            kpi_ids.append(get_analytics_repo().store_business_kpi(kpi))
         
         return jsonify(success_response(
             {'kpi_ids': kpi_ids},
@@ -512,7 +512,7 @@ def export_analytics_data():
             filters['event_category'] = event_category
         
         # Get events
-        events = analytics_repo.get_events(filters, limit=10000)
+        events = get_analytics_repo().get_events(filters, limit=10000)
         
         if format_type == 'csv':
             # Convert to CSV

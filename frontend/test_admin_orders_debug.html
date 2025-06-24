@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Orders Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .section { margin-bottom: 30px; padding: 15px; border: 1px solid #ccc; }
+        .success { color: green; }
+        .error { color: red; }
+        pre { background: #f4f4f4; padding: 10px; overflow-x: auto; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Admin Orders Debug Page</h1>
+    
+    <div class="section">
+        <h2>1. Environment Detection</h2>
+        <pre id="env-info"></pre>
+    </div>
+    
+    <div class="section">
+        <h2>2. Auth Token Check</h2>
+        <pre id="auth-info"></pre>
+    </div>
+    
+    <div class="section">
+        <h2>3. API URL Detection</h2>
+        <pre id="api-url-info"></pre>
+    </div>
+    
+    <div class="section">
+        <h2>4. Test API Call</h2>
+        <button onclick="testOrdersAPI()">Test Orders API</button>
+        <pre id="api-test-result"></pre>
+    </div>
+    
+    <script>
+        // 1. Environment Detection
+        document.getElementById('env-info').textContent = JSON.stringify({
+            location_href: window.location.href,
+            hostname: window.location.hostname,
+            protocol: window.location.protocol,
+            port: window.location.port || 'default'
+        }, null, 2);
+        
+        // 2. Auth Token Check
+        const authTokens = {
+            auth_access_token: localStorage.getItem('auth_access_token'),
+            authToken: localStorage.getItem('authToken'),
+            checkout_token: localStorage.getItem('checkout_token'),
+            all_localStorage_keys: Object.keys(localStorage)
+        };
+        document.getElementById('auth-info').textContent = JSON.stringify(authTokens, null, 2);
+        
+        // 3. API URL Detection (mimicking the logic from api.js)
+        const getApiBaseUrl = () => {
+            // Check for React env variable (won't be available in plain HTML)
+            const envUrl = 'http://192.168.1.137:8000/api'; // Hardcoded from .env
+            
+            // Check if we're accessing from localhost but env is set to IP
+            if (window.location.hostname === 'localhost' && envUrl.includes('192.168')) {
+                return 'http://localhost:8000/api';
+            }
+            
+            return envUrl;
+        };
+        
+        const apiBaseUrl = getApiBaseUrl();
+        document.getElementById('api-url-info').textContent = JSON.stringify({
+            calculated_url: apiBaseUrl,
+            env_url: 'http://192.168.1.137:8000/api',
+            decision: window.location.hostname === 'localhost' ? 'Using localhost instead of IP' : 'Using env URL'
+        }, null, 2);
+        
+        // 4. Test API Call
+        async function testOrdersAPI() {
+            const resultDiv = document.getElementById('api-test-result');
+            resultDiv.textContent = 'Testing...';
+            
+            try {
+                const token = localStorage.getItem('auth_access_token') || 
+                             localStorage.getItem('authToken') || 
+                             localStorage.getItem('checkout_token');
+                
+                const headers = {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                };
+                
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+                
+                const url = `${apiBaseUrl}/admin/orders?_t=${Date.now()}`;
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: headers
+                });
+                
+                const responseText = await response.text();
+                let responseData;
+                try {
+                    responseData = JSON.parse(responseText);
+                } catch (e) {
+                    responseData = responseText;
+                }
+                
+                resultDiv.textContent = JSON.stringify({
+                    request: {
+                        url: url,
+                        headers: headers,
+                        method: 'GET'
+                    },
+                    response: {
+                        status: response.status,
+                        statusText: response.statusText,
+                        headers: Object.fromEntries(response.headers.entries()),
+                        data: responseData
+                    }
+                }, null, 2);
+                
+                if (!response.ok) {
+                    resultDiv.className = 'error';
+                } else {
+                    resultDiv.className = 'success';
+                }
+            } catch (error) {
+                resultDiv.textContent = JSON.stringify({
+                    error: error.message,
+                    stack: error.stack
+                }, null, 2);
+                resultDiv.className = 'error';
+            }
+        }
+        
+        // Auto-run the test
+        window.addEventListener('load', () => {
+            setTimeout(testOrdersAPI, 1000);
+        });
+    </script>
+</body>
+</html>

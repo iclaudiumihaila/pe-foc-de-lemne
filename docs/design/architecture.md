@@ -552,3 +552,53 @@ App
 - **Security Vulnerabilities**: Regular security audits
 
 This architecture provides a solid foundation for the local producer web application, emphasizing mobile-first design, security, and maintainability while keeping the implementation appropriately simple for the business requirements.
+
+## 11. UI Animation Architecture
+
+### 11.1 Add to Cart Animation Components
+**Added**: 2025-06-23
+
+#### 11.1.1 Component Structure
+```
+components/
+├── common/
+│   └── AddToCartButton.jsx    # Enhanced button with animation
+├── animations/
+│   ├── FloatingIndicator.jsx  # "+1" floating animation
+│   └── CartIconPulse.jsx      # Cart icon pulse effect
+└── product/
+    ├── ProductCard.jsx         # Updated to use new button
+    └── ProductDetail.jsx       # Updated to use new button
+```
+
+#### 11.1.2 Animation State Management
+- **Button State**: Local state for success animation
+- **Floating Indicator**: Portal-based rendering for proper positioning
+- **Cart Icon**: Context-based trigger for pulse animation
+
+#### 11.1.3 CSS Architecture
+```css
+/* Animation keyframes */
+@keyframes float-up {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-40px); opacity: 0; }
+}
+
+@keyframes pulse-cart {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+@keyframes success-check {
+  0% { transform: scale(0) rotate(45deg); opacity: 0; }
+  50% { transform: scale(1.2) rotate(45deg); opacity: 1; }
+  100% { transform: scale(1) rotate(45deg); opacity: 1; }
+}
+```
+
+#### 11.1.4 Accessibility Considerations
+- **ARIA Live Regions**: Announce cart updates to screen readers
+- **Focus Management**: Maintain button focus during animation
+- **Motion Preferences**: Respect prefers-reduced-motion
+- **Keyboard Support**: Ensure animations don't interfere with keyboard navigation

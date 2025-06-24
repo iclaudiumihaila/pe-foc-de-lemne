@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Check Auth</title>
+</head>
+<body>
+    <h1>Auth Debug</h1>
+    <pre id="result"></pre>
+    <script>
+        // Check all auth-related localStorage items
+        const result = document.getElementById('result');
+        let output = 'LocalStorage Auth Items:\n\n';
+        
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key.includes('auth') || key.includes('token')) {
+                const value = localStorage.getItem(key);
+                output += `${key}: ${value ? value.substring(0, 50) + '...' : 'null'}\n`;
+            }
+        }
+        
+        // Test API call with token
+        const token = localStorage.getItem('auth_access_token');
+        output += `\nAuth token exists: ${!!token}\n`;
+        
+        if (token) {
+            fetch('http://localhost:8000/api/admin/orders', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            }).then(r => {
+                output += `\nAPI Test Result: ${r.status} ${r.statusText}`;
+                result.textContent = output;
+            });
+        } else {
+            result.textContent = output;
+        }
+    </script>
+</body>
+</html>

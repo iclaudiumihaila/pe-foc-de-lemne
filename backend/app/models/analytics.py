@@ -489,4 +489,11 @@ class AnalyticsRepository:
 
 
 # Global analytics repository instance
-analytics_repo = AnalyticsRepository()
+analytics_repo = None
+
+def get_analytics_repo():
+    """Get or create the analytics repository instance."""
+    global analytics_repo
+    if analytics_repo is None:
+        analytics_repo = AnalyticsRepository()
+    return analytics_repo

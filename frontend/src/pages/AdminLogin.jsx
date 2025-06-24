@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ErrorMessage, { FormError } from '../components/common/ErrorMessage';
 import Loading from '../components/common/Loading';
 
 const AdminLogin = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login, isAuthenticated, isLoading, error, clearError } = useAuth();
 
   // Form state
@@ -27,9 +28,11 @@ const AdminLogin = () => {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/admin/dashboard', { replace: true });
+      // Get the page they were trying to access, or default to dashboard
+      const from = location.state?.from?.pathname || '/admin/dashboard';
+      navigate(from, { replace: true });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, location]);
 
   // Clear auth error when component mounts
   useEffect(() => {
@@ -144,8 +147,9 @@ const AdminLogin = () => {
       });
 
       if (result.success) {
-        // Login successful - AuthContext will handle redirect via useEffect
-        navigate('/admin/dashboard', { replace: true });
+        // Login successful - redirect to originally requested page or dashboard
+        const from = location.state?.from?.pathname || '/admin/dashboard';
+        navigate(from, { replace: true });
       }
       // If login fails, error will be handled by AuthContext and displayed
     } catch (error) {

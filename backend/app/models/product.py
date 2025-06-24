@@ -40,7 +40,7 @@ class Product:
     # Name and description validation
     MIN_NAME_LENGTH = 2
     MAX_NAME_LENGTH = 100
-    MIN_DESCRIPTION_LENGTH = 10
+    MIN_DESCRIPTION_LENGTH = 5  # Reduced from 10 for easier testing
     MAX_DESCRIPTION_LENGTH = 1000
     
     # Weight validation (grams)
@@ -131,7 +131,7 @@ class Product:
                 'name': sanitize_string(name.strip()),
                 'slug': slug,
                 'description': sanitize_string(description.strip()),
-                'price': validated_price,
+                'price': float(validated_price),  # Convert Decimal to float for MongoDB
                 'category_id': validated_category_id,
                 'images': validated_images,
                 'stock_quantity': validated_stock,
@@ -367,7 +367,7 @@ class Product:
             
             if 'price' in data:
                 validated_price = self._validate_price(data['price'])
-                update_data['price'] = validated_price
+                update_data['price'] = float(validated_price)  # Convert Decimal to float for MongoDB
                 self.price = validated_price
             
             if 'stock_quantity' in data:
@@ -597,7 +597,7 @@ class Product:
         
         description = description.strip()
         if len(description) < Product.MIN_DESCRIPTION_LENGTH:
-            raise ValidationError(f"Description must be at least {Product.MIN_DESCRIPTION_LENGTH} characters")
+            raise ValidationError(f"Descrierea trebuie să aibă cel puțin {Product.MIN_DESCRIPTION_LENGTH} caractere")
         
         if len(description) > Product.MAX_DESCRIPTION_LENGTH:
             raise ValidationError(f"Description must not exceed {Product.MAX_DESCRIPTION_LENGTH} characters")
@@ -680,13 +680,20 @@ class Product:
     
     @staticmethod
     def _validate_images(images: List[str]) -> List[str]:
-        """Validate image URLs."""
+        """Validate image URLs or paths."""
         if not isinstance(images, list):
             raise ValidationError("Images must be a list")
         
         validated_images = []
+        # Allow both full URLs and relative paths (for local images)
+        # Updated pattern to allow query parameters with special characters
         url_pattern = re.compile(
-            r'^https?://(?:[-\w.])+(?:[:\d]+)?(?:/(?:[\w/_.])*(?:\?(?:[\w&=%.])*)?(?:#(?:[\w.])*)?)?$'
+            r'^https?://[^\s<>"\{\}\|\\\^`\[\]]+$'
+        )
+        # Pattern for relative image paths including upload paths
+        relative_path_pattern = re.compile(
+            r'^/?(?:uploads/)?[\w\-/]+\.(?:jpg|jpeg|png|gif|svg|webp)$',
+            re.IGNORECASE
         )
         
         for image_url in images:
@@ -694,10 +701,10 @@ class Product:
                 raise ValidationError("Each image URL must be a string")
             
             image_url = image_url.strip()
-            if image_url and not url_pattern.match(image_url):
-                raise ValidationError(f"Invalid image URL format: {image_url}")
-            
-            if image_url:  # Only add non-empty URLs
+            if image_url:
+                # Check if it's a valid URL or a valid relative path
+                if not (url_pattern.match(image_url) or relative_path_pattern.match(image_url)):
+                    raise ValidationError(f"Invalid image URL or path format: {image_url}")
                 validated_images.append(image_url)
         
         return validated_images

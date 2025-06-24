@@ -2,6 +2,162 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Ensure swipeable cards are touchable on mobile */
+.swipeable-card-top {
+  touch-action: none !important;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Import animation styles */
+@import './animations.css';
+
+/* Fix for swipeable card images to override Tailwind's preflight */
+.swipeable-card-image {
+  height: 100% !important;
+  width: 100% !important;
+  object-fit: cover !important;
+}
+
+/* Pinterest-style masonry grid with proper specificity */
+.masonry-grid {
+  column-count: 2;
+  column-gap: 5px;
+  width: 100%;
+  box-sizing: border-box;
+  /* Ensure consistent layout */
+  contain: layout style;
+  /* Prevent content from affecting columns */
+  isolation: isolate;
+}
+
+/* Force proper column count at specific breakpoints */
+@container (min-width: 768px) {
+  .masonry-grid {
+    column-count: 3;
+  }
+}
+
+@container (min-width: 1024px) {
+  .masonry-grid {
+    column-count: 4;
+  }
+}
+
+/* Tablet - 3 columns */
+@media screen and (min-width: 768px) {
+  .masonry-grid {
+    column-count: 3;
+    column-gap: 5px;
+  }
+}
+
+/* Desktop - 4 columns */
+@media screen and (min-width: 1024px) {
+  .masonry-grid {
+    column-count: 4;
+    column-gap: 5px;
+  }
+}
+
+/* Large desktop - still 4 columns for consistency */
+@media screen and (min-width: 1280px) {
+  .masonry-grid {
+    column-count: 4;
+    column-gap: 5px;
+  }
+}
+
+.masonry-item {
+  break-inside: avoid;
+  page-break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  margin-bottom: 5px;
+  display: inline-block;
+  width: 100%;
+  box-sizing: border-box;
+  /* Ensure item doesn't break layout */
+  overflow: hidden;
+  /* Fix inline-block spacing issue */
+  vertical-align: top;
+}
+
+/* Remove bottom margin from last items to prevent extra space */
+.masonry-item:last-child {
+  margin-bottom: 0;
+}
+
+/* Ensure masonry grid in max-w-7xl container works properly */
+.max-w-7xl .masonry-grid {
+  column-fill: balance;
+}
+
+/* Override any conflicting styles from parent containers */
+div[class*="max-w-"] .masonry-grid {
+  width: 100% !important;
+}
+
+/* Mobile hover states - show overlay and cart button on touch devices */
+@media (hover: none) and (pointer: coarse) {
+  .group .opacity-0 {
+    opacity: 1 !important;
+  }
+  
+  .group .translate-y-full {
+    transform: translateY(0) !important;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+/* Cart receive item animation */
+@keyframes cartReceive {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.cart-receive-item {
+  animation: cartReceive 0.6s ease-in-out;
+}
+
 /* Custom component classes */
 @layer components {
   .btn-primary {
@@ -60,5 +216,14 @@
   
   .bg-gradient-primary {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+  
+  /* Line clamp utility for product names */
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }

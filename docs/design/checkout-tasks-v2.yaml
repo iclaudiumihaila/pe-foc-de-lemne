@@ -1,0 +1,198 @@
+# Atomic Tasks for Simplified Checkout Implementation (Revised)
+
+tasks:
+  # Database Setup
+  - id: "04"
+    slug: "create-customer-phones-indexes"
+    description: "Create MongoDB indexes for customer_phones collection"
+    deliverable: "Database indexes created and verified"
+    dependencies: []
+    estimated_effort: "10 minutes"
+    
+  - id: "05"
+    slug: "create-customer-phone-model"
+    description: "Create CustomerPhone model class with validation"
+    deliverable: "Python model class with CRUD methods"
+    dependencies: ["04"]
+    estimated_effort: "20 minutes"
+    
+  # SMS Service Setup
+  - id: "06"
+    slug: "configure-sms-service"
+    description: "Configure SMS service (mock for dev)"
+    deliverable: "SMS service configuration and mock implementation"
+    dependencies: []
+    estimated_effort: "15 minutes"
+    
+  # Rate Limiting
+  - id: "07"
+    slug: "implement-rate-limiter"
+    description: "Create rate limiting utility for SMS"
+    deliverable: "Rate limiter class with Redis integration"
+    dependencies: []
+    estimated_effort: "20 minutes"
+    
+  # API Endpoints - Phone Verification
+  - id: "08"
+    slug: "create-send-code-endpoint"
+    description: "Create POST /api/checkout/phone/send-code endpoint"
+    deliverable: "Endpoint that sends SMS verification code"
+    dependencies: ["05", "06", "07"]
+    estimated_effort: "25 minutes"
+    
+  - id: "09"
+    slug: "create-verify-code-endpoint"
+    description: "Create POST /api/checkout/phone/verify-code endpoint"
+    deliverable: "Endpoint that verifies code and returns JWT"
+    dependencies: ["05"]
+    estimated_effort: "25 minutes"
+    
+  # Session Management
+  - id: "10"
+    slug: "implement-jwt-sessions"
+    description: "Implement JWT session token generation and validation"
+    deliverable: "JWT utilities for session management"
+    dependencies: []
+    estimated_effort: "20 minutes"
+    
+  # API Endpoints - Address Management
+  - id: "11"
+    slug: "create-get-addresses-endpoint"
+    description: "Create GET /api/checkout/addresses endpoint"
+    deliverable: "Endpoint returning user's saved addresses"
+    dependencies: ["05", "10"]
+    estimated_effort: "15 minutes"
+    
+  - id: "12"
+    slug: "create-add-address-endpoint"
+    description: "Create POST /api/checkout/addresses endpoint"
+    deliverable: "Endpoint to save new address"
+    dependencies: ["05", "10"]
+    estimated_effort: "20 minutes"
+    
+  - id: "13"
+    slug: "create-update-address-endpoint"
+    description: "Create PUT /api/checkout/addresses/:id endpoint"
+    deliverable: "Endpoint to update existing address"
+    dependencies: ["05", "10"]
+    estimated_effort: "20 minutes"
+    
+  - id: "14"
+    slug: "create-delete-address-endpoint"
+    description: "Create DELETE /api/checkout/addresses/:id endpoint"
+    deliverable: "Endpoint to remove address"
+    dependencies: ["05", "10"]
+    estimated_effort: "15 minutes"
+    
+  # Order Integration
+  - id: "15"
+    slug: "update-order-model"
+    description: "Add customer_phone_id to Order model"
+    deliverable: "Updated Order model with phone reference"
+    dependencies: ["05"]
+    estimated_effort: "10 minutes"
+    
+  - id: "16"
+    slug: "create-checkout-order-endpoint"
+    description: "Create POST /api/checkout/create-order endpoint"
+    deliverable: "Endpoint that creates order from verified session"
+    dependencies: ["15", "10"]
+    estimated_effort: "30 minutes"
+    
+  # Frontend Components
+  - id: "17"
+    slug: "create-phone-input-component"
+    description: "Create PhoneInput component with validation"
+    deliverable: "React component for phone/name input"
+    dependencies: []
+    estimated_effort: "20 minutes"
+    
+  - id: "18"
+    slug: "create-code-verification-component"
+    description: "Create CodeVerification component"
+    deliverable: "React component for 6-digit code input"
+    dependencies: []
+    estimated_effort: "25 minutes"
+    
+  - id: "19"
+    slug: "create-address-selector-component"
+    description: "Create AddressSelector component"
+    deliverable: "React component showing saved addresses"
+    dependencies: []
+    estimated_effort: "20 minutes"
+    
+  - id: "20"
+    slug: "create-address-form-component"
+    description: "Create AddressForm component"
+    deliverable: "React component for new address input"
+    dependencies: []
+    estimated_effort: "20 minutes"
+    
+  # State Management
+  - id: "21"
+    slug: "create-checkout-reducer"
+    description: "Create checkout state reducer"
+    deliverable: "React reducer for checkout flow state"
+    dependencies: []
+    estimated_effort: "15 minutes"
+    
+  # Integration
+  - id: "22"
+    slug: "integrate-phone-verification-ui"
+    description: "Integrate phone/code components in checkout"
+    deliverable: "Working phone verification in checkout page"
+    dependencies: ["17", "18", "21", "08", "09"]
+    estimated_effort: "25 minutes"
+    
+  - id: "23"
+    slug: "integrate-address-selection-ui"
+    description: "Integrate address components in checkout"
+    deliverable: "Working address selection after verification"
+    dependencies: ["19", "20", "21", "11", "12"]
+    estimated_effort: "25 minutes"
+    
+  - id: "24"
+    slug: "integrate-order-creation"
+    description: "Connect checkout to order creation"
+    deliverable: "Complete checkout flow creating orders"
+    dependencies: ["22", "23", "16"]
+    estimated_effort: "20 minutes"
+    
+  # Testing
+  - id: "25"
+    slug: "test-phone-verification-flow"
+    description: "E2E test phone verification"
+    deliverable: "Verified phone verification works"
+    dependencies: ["22"]
+    estimated_effort: "20 minutes"
+    
+  - id: "26"
+    slug: "test-address-management"
+    description: "E2E test address CRUD operations"
+    deliverable: "Verified address management works"
+    dependencies: ["23"]
+    estimated_effort: "20 minutes"
+    
+  - id: "27"
+    slug: "test-complete-checkout"
+    description: "E2E test full checkout to order"
+    deliverable: "Verified complete checkout flow"
+    dependencies: ["24"]
+    estimated_effort: "30 minutes"
+
+review_points:
+  - after_task: "10"
+    review_focus: "Security implementation (JWT, rate limiting)"
+  - after_task: "16"
+    review_focus: "Backend API completeness"
+  - after_task: "24"
+    review_focus: "Frontend UX and error handling"
+  - after_task: "27"
+    review_focus: "Complete implementation and edge cases"
+
+notes:
+  - All tasks are now truly atomic with single deliverables
+  - Backend security tasks come first (rate limiting, JWT)
+  - Frontend can progress in parallel after task 10
+  - Each endpoint is a separate task
+  - Integration tasks depend on both frontend and backend

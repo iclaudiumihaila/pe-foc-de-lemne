@@ -1,8 +1,40 @@
 import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
+import api from '../services/api';
 
 export const useCart = () => {
-  const [cartItems, setCartItems] = useState([]);
+  // Initialize cart from localStorage or sessionStorage
+  const getInitialCart = () => {
+    try {
+      // Try localStorage first
+      const savedCart = localStorage.getItem('cart');
+      if (savedCart) {
+        const items = JSON.parse(savedCart);
+        if (Array.isArray(items) && items.length > 0) {
+          console.log('Initializing cart from localStorage:', items);
+          return items;
+        }
+      }
+      
+      // Fallback to sessionStorage
+      const sessionCart = sessionStorage.getItem('cart');
+      if (sessionCart) {
+        const items = JSON.parse(sessionCart);
+        if (Array.isArray(items) && items.length > 0) {
+          console.log('Initializing cart from sessionStorage:', items);
+          // Also save to localStorage for persistence
+          localStorage.setItem('cart', sessionCart);
+          return items;
+        }
+      }
+    } catch (error) {
+      console.error('Error parsing saved cart:', error);
+    }
+    console.log('No saved cart found, starting with empty cart');
+    return [];
+  };
+
+  const [cartItems, setCartItems] = useState(getInitialCart);
   const [cartItemCount, setCartItemCount] = useState(0);
   const [cartTotal, setCartTotal] = useState(0);
   const [cartSubtotal, setCartSubtotal] = useState(0);
@@ -10,32 +42,19 @@ export const useCart = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [cartId, setCartId] = useState(null);
   
-  // Generate or retrieve cart session ID
+  // Generate or retrieve cart session ID (MongoDB ObjectId format)
   useEffect(() => {
     let sessionCartId = localStorage.getItem('cartId');
-    if (!sessionCartId) {
-      sessionCartId = `cart_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    if (!sessionCartId || !sessionCartId.match(/^[0-9a-fA-F]{24}$/)) {
+      // Generate a valid MongoDB ObjectId (24 hex characters)
+      const timestamp = Math.floor(Date.now() / 1000).toString(16).padStart(8, '0');
+      const randomHex = Array.from({length: 16}, () => Math.floor(Math.random() * 16).toString(16)).join('');
+      sessionCartId = timestamp + randomHex;
       localStorage.setItem('cartId', sessionCartId);
     }
     setCartId(sessionCartId);
   }, []);
   
-  // Load cart from localStorage on mount
-  useEffect(() => {
-    const savedCart = localStorage.getItem('cart');
-    if (savedCart) {
-      try {
-        const items = JSON.parse(savedCart);
-        if (Array.isArray(items)) {
-          setCartItems(items);
-        }
-      } catch (error) {
-        console.error('Error loading cart from localStorage:', error);
-        setCartItems([]);
-        localStorage.removeItem('cart');
-      }
-    }
-  }, []);
   
   // Update counts and totals when cart items change
   useEffect(() => {
@@ -55,12 +74,15 @@ export const useCart = () => {
     setCartTax(tax);
     setCartTotal(total);
     
-    // Save to localStorage with error handling
+    // Save to both localStorage and sessionStorage for redundancy
     try {
-      localStorage.setItem('cart', JSON.stringify(cartItems));
+      const cartData = JSON.stringify(cartItems);
+      console.log('Saving cart to storage:', cartItems);
+      localStorage.setItem('cart', cartData);
+      sessionStorage.setItem('cart', cartData);
     } catch (error) {
-      console.error('Error saving cart to localStorage:', error);
-      toast.error('Eroare la salvarea coșului');
+      console.error('Error saving cart to storage:', error);
+      toast.error('Eroare la salvarea cosului');
     }
   }, [cartItems]);
   
@@ -72,6 +94,21 @@ export const useCart = () => {
     }).format(price);
   }, []);
   
+  // Sync cart item to backend
+  const syncCartItemToBackend = useCallback(async (item, sessionId) => {
+    try {
+      await api.post('/cart/', {
+        product_id: item.id || item._id,
+        quantity: item.quantity,
+        session_id: sessionId
+      });
+      return true;
+    } catch (error) {
+      console.error('Error syncing cart item to backend:', error);
+      return false;
+    }
+  }, []);
+  
   // Add item to cart
   const addToCart = useCallback((product, quantity = 1) => {
     if (!product || !product.id) {
@@ -80,24 +117,27 @@ export const useCart = () => {
     }
     
     if (!product.inStock) {
-      toast.error('Produsul nu este în stoc');
+      toast.error('Produsul nu este in stoc');
       return;
     }
     
     if (quantity <= 0) {
-      toast.error('Cantitatea trebuie să fie pozitivă');
+      toast.error('Cantitatea trebuie sa fie pozitiva');
       return;
     }
     
     setIsLoading(true);
     
     try {
+      console.log('Adding to cart:', product);
+      
+      // First update local state
       setCartItems(prevItems => {
         const existingItem = prevItems.find(item => item.id === product.id);
         
         if (existingItem) {
           const newQuantity = existingItem.quantity + quantity;
-          toast.success(`${product.name} - cantitate actualizată la ${newQuantity}`);
+          toast.success(`${product.name} - cantitate actualizata la ${newQuantity}`);
           
           return prevItems.map(item =>
             item.id === product.id
@@ -105,7 +145,7 @@ export const useCart = () => {
               : item
           );
         } else {
-          toast.success(`${product.name} adăugat în coș`);
+          toast.success(`${product.name} adaugat in cos`);
           
           return [...prevItems, { 
             ...product, 
@@ -114,13 +154,24 @@ export const useCart = () => {
           }];
         }
       });
+      
+      // Sync to backend after state update
+      if (cartId) {
+        setTimeout(async () => {
+          await syncCartItemToBackend({
+            id: product.id,
+            _id: product._id,
+            quantity: quantity
+          }, cartId);
+        }, 100);
+      }
     } catch (error) {
       console.error('Error adding to cart:', error);
-      toast.error('Eroare la adăugarea în coș');
+      toast.error('Eroare la adaugarea in cos');
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [cartId, syncCartItemToBackend]);
   
   // Remove item from cart
   const removeFromCart = useCallback((productId) => {
@@ -129,7 +180,7 @@ export const useCart = () => {
     setCartItems(prevItems => {
       const item = prevItems.find(item => item.id === productId);
       if (item) {
-        toast.success(`${item.name} eliminat din coș`);
+        toast.success(`${item.name} eliminat din cos`);
       }
       return prevItems.filter(item => item.id !== productId);
     });
@@ -147,7 +198,7 @@ export const useCart = () => {
     setCartItems(prevItems => {
       const item = prevItems.find(item => item.id === productId);
       if (item) {
-        toast.success(`${item.name} - cantitate actualizată`);
+        toast.success(`${item.name} - cantitate actualizata`);
       }
       
       return prevItems.map(item =>
@@ -185,7 +236,7 @@ export const useCart = () => {
   // Clear entire cart
   const clearCart = useCallback(() => {
     setCartItems([]);
-    toast.success('Coșul a fost golit');
+    toast.success('Cosul a fost golit');
   }, []);
   
   // Get cart item by product ID
@@ -229,7 +280,7 @@ export const useCart = () => {
           item.id && item.name && item.price && item.quantity > 0
         )
       );
-      toast.error('Unele produse din coș au fost eliminate (produse invalide)');
+      toast.error('Unele produse din cos au fost eliminate (produse invalide)');
     }
     
     return invalidItems.length === 0;

@@ -27,7 +27,7 @@ class Config:
     SECRET_KEY = os.environ.get('FLASK_SECRET_KEY') or 'dev-secret-key-change-in-production'
     DEBUG = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
     HOST = os.environ.get('FLASK_HOST', '127.0.0.1')
-    PORT = int(os.environ.get('FLASK_PORT', 8080))
+    PORT = int(os.environ.get('FLASK_PORT', 8000))
     
     # =============================================================================
     # DATABASE CONFIGURATION
@@ -39,18 +39,28 @@ class Config:
     MONGODB_MIN_POOL_SIZE = int(os.environ.get('MONGODB_MIN_POOL_SIZE', 1))
     
     # =============================================================================
-    # SMS SERVICE CONFIGURATION (TWILIO)
+    # SMS SERVICE CONFIGURATION
     # =============================================================================
     
+    SMS_CODE_EXPIRES_MINUTES = int(os.environ.get('SMS_CODE_EXPIRES_MINUTES', 10))
+    ACTIVE_SMS_PROVIDER = os.environ.get('ACTIVE_SMS_PROVIDER', 'smso')
+    
+    # Legacy Twilio configuration
     TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID')
     TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN')
     TWILIO_PHONE_NUMBER = os.environ.get('TWILIO_PHONE_NUMBER')
-    SMS_CODE_EXPIRES_MINUTES = int(os.environ.get('SMS_CODE_EXPIRES_MINUTES', 10))
+    
+    # SMSO.ro configuration
+    SMSO_API_KEY = os.environ.get('SMSO_API_KEY')
+    SMSO_SENDER_ID = os.environ.get('SMSO_SENDER_ID', 'PeFocLemne')
+    SMSO_API_BASE_URL = os.environ.get('SMSO_API_BASE_URL')
+    SMSO_WEBHOOK_URL = os.environ.get('SMSO_WEBHOOK_URL')
     
     # =============================================================================
     # AUTHENTICATION & SECURITY CONFIGURATION
     # =============================================================================
     
+    ENCRYPTION_MASTER_KEY = os.environ.get('ENCRYPTION_MASTER_KEY')
     JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY') or 'dev-jwt-secret-change-in-production'
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=int(os.environ.get('JWT_ACCESS_TOKEN_EXPIRES_HOURS', 2)))
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=int(os.environ.get('JWT_REFRESH_TOKEN_EXPIRES_DAYS', 30)))
@@ -86,7 +96,10 @@ class Config:
     # CORS CONFIGURATION
     # =============================================================================
     
-    CORS_ORIGINS = [origin.strip() for origin in os.environ.get('CORS_ORIGINS', 'http://localhost:3000').split(',')]
+    # Allow both localhost and any IP in the local network range
+    default_origins = 'http://localhost:3000,http://192.168.1.137:3000'
+    # Add support for any 192.168.x.x address dynamically
+    CORS_ORIGINS = [origin.strip() for origin in os.environ.get('CORS_ORIGINS', default_origins).split(',')]
     
     # =============================================================================
     # LOGGING CONFIGURATION

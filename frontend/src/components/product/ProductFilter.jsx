@@ -29,26 +29,21 @@ const ProductFilter = ({
   // Local UI state
   const [filtersExpanded, setFiltersExpanded] = useState(false);
   const [localSearchTerm, setLocalSearchTerm] = useState(searchTerm || '');
-
-  // Update local search term when prop changes
-  useEffect(() => {
-    setLocalSearchTerm(searchTerm || '');
-  }, [searchTerm]);
+  
 
   // Debounced search handler
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (localSearchTerm !== searchTerm) {
-        onSearchChange(localSearchTerm);
-      }
+      onSearchChange(localSearchTerm);
     }, 300);
     
     return () => clearTimeout(timer);
-  }, [localSearchTerm, searchTerm, onSearchChange]);
+  }, [localSearchTerm, onSearchChange]);
 
   // Handle local search input change
   const handleSearchInputChange = (e) => {
-    setLocalSearchTerm(e.target.value);
+    const value = e.target.value;
+    setLocalSearchTerm(value);
   };
 
   // Handle clear search
@@ -75,50 +70,18 @@ const ProductFilter = ({
     return count;
   };
 
-  // Search Input Component
-  const SearchInput = () => (
-    <div className="relative">
-      <input
-        type="text"
-        placeholder="Căutați produse..."
-        value={localSearchTerm}
-        onChange={handleSearchInputChange}
-        className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
-      />
-      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-        <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-      </div>
-      {localSearchTerm && (
-        <button
-          onClick={handleClearSearch}
-          className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
-        >
-          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      )}
-      {searchLoading && (
-        <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-          <div className="animate-spin h-4 w-4 border-2 border-green-500 border-t-transparent rounded-full"></div>
-        </div>
-      )}
-    </div>
-  );
 
   // Category Filters Component
   const CategoryFilters = () => (
-    <div className="space-y-3">
+    <div className="space-y-2">
       <h4 className="text-sm font-medium text-gray-700">Categorii</h4>
       <div className="flex flex-wrap gap-2">
         <button
           onClick={() => onCategoryChange('')}
-          className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
             selectedCategory === '' 
               ? 'bg-green-600 text-white' 
-              : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
           Toate produsele
@@ -127,10 +90,10 @@ const ProductFilter = ({
           <button
             key={category.id}
             onClick={() => onCategoryChange(category.id)}
-            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
               selectedCategory === category.id 
                 ? 'bg-green-600 text-white' 
-                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
             {category.name}
@@ -150,7 +113,7 @@ const ProductFilter = ({
         id="sort-select"
         value={`${sortBy}-${sortOrder}`}
         onChange={handleSortChange}
-        className="border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white"
+        className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white"
       >
         <option value="name-asc">Nume (A-Z)</option>
         <option value="name-desc">Nume (Z-A)</option>
@@ -229,7 +192,7 @@ const ProductFilter = ({
     return (
       <button
         onClick={() => setFiltersExpanded(!filtersExpanded)}
-        className="md:hidden flex items-center justify-between w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+        className="md:hidden flex items-center justify-between w-full px-4 py-2.5 bg-gray-100 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-200"
       >
         <span className="flex items-center">
           <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -255,63 +218,113 @@ const ProductFilter = ({
   };
 
   return (
-    <div className={`product-filter bg-white rounded-lg border border-gray-200 ${className}`}>
+    <div className={`product-filter ${className}`}>
       {/* Desktop Layout */}
-      <div className="hidden md:block p-6">
+      <div className="hidden md:block">
         {/* Search and Sort Row */}
         <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between mb-6">
           <div className="flex-1 max-w-md">
-            <SearchInput />
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Căutați produse..."
+                value={localSearchTerm}
+                onChange={handleSearchInputChange}
+                className="w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
+              />
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              {localSearchTerm && (
+                <button
+                  onClick={handleClearSearch}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+              {searchLoading && (
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                  <div className="animate-spin h-4 w-4 border-2 border-green-500 border-t-transparent rounded-full"></div>
+                </div>
+              )}
+            </div>
           </div>
           <SortDropdown />
         </div>
         
         {/* Category Filters */}
-        <div className="mb-4">
-          <CategoryFilters />
-        </div>
-        
-        {/* Filter Summary */}
-        <FilterSummary />
-      </div>
-
-      {/* Mobile Layout */}
-      <div className="md:hidden">
-        {/* Search Input - Always Visible */}
-        <div className="p-4 border-b border-gray-200">
-          <SearchInput />
-        </div>
-        
-        {/* Mobile Filter Toggle */}
-        <div className="p-4 border-b border-gray-200">
-          <MobileFilterToggle />
-        </div>
-        
-        {/* Collapsible Filter Content */}
-        {filtersExpanded && (
-          <div className="p-4 space-y-4 border-b border-gray-200">
+        {categories.length > 0 && (
+          <div className="mb-6">
             <CategoryFilters />
-            <div className="pt-2">
-              <SortDropdown />
-            </div>
           </div>
         )}
         
-        {/* Filter Summary - Always Visible if Active */}
-        <div className="p-4">
-          <FilterSummary />
-        </div>
-      </div>
-      
-      {/* Loading Overlay */}
-      {loading && (
-        <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center rounded-lg">
-          <div className="flex items-center space-x-2 text-gray-600">
-            <div className="animate-spin h-5 w-5 border-2 border-green-500 border-t-transparent rounded-full"></div>
-            <span className="text-sm">Se încarcă filtrele...</span>
+        {/* Results Count */}
+        {showResultCount && totalResults > 0 && (
+          <div className="text-sm text-gray-600">
+            <strong>{totalResults}</strong> {totalResults === 1 ? 'produs' : 'produse'}
+            {searchTerm && searchTerm.trim() && ` pentru "${searchTerm}"`}
           </div>
+        )}
+      </div>
+
+      {/* Mobile Layout */}
+      <div className="md:hidden space-y-4">
+        {/* Search Input - Always Visible */}
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Căutați produse..."
+            value={localSearchTerm}
+            onChange={handleSearchInputChange}
+            className="w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
+          />
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          {localSearchTerm && (
+            <button
+              onClick={handleClearSearch}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
+          {searchLoading && (
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+              <div className="animate-spin h-4 w-4 border-2 border-green-500 border-t-transparent rounded-full"></div>
+            </div>
+          )}
         </div>
-      )}
+        
+        {/* Mobile Filter Toggle */}
+        <MobileFilterToggle />
+        
+        {/* Collapsible Filter Content */}
+        {filtersExpanded && (
+          <div className="space-y-4 pt-4">
+            <CategoryFilters />
+            <SortDropdown />
+          </div>
+        )}
+        
+        {/* Results Count */}
+        {showResultCount && totalResults > 0 && (
+          <div className="text-sm text-gray-600">
+            <strong>{totalResults}</strong> {totalResults === 1 ? 'produs' : 'produse'}
+            {searchTerm && searchTerm.trim() && ` pentru "${searchTerm}"`}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

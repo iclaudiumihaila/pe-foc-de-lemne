@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import api from '../services/api';
+import api, { axiosInstance } from '../services/api';
 
 // Initial state
 const initialState = {
@@ -155,7 +155,10 @@ export const AuthProvider = ({ children }) => {
 
   // Create authenticated API instance
   const createAuthenticatedApi = (token) => {
-    const authApi = api.create();
+    const authApi = axiosInstance.create({
+      baseURL: axiosInstance.defaults.baseURL,
+      timeout: axiosInstance.defaults.timeout
+    });
     authApi.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     return authApi;
   };
@@ -354,9 +357,10 @@ export const AuthProvider = ({ children }) => {
 
   // Setup axios interceptor for automatic token attachment
   useEffect(() => {
-    const requestInterceptor = api.interceptors.request.use(
+    const requestInterceptor = axiosInstance.interceptors.request.use(
       (config) => {
-        const token = getToken();
+        // Get token directly from storage to avoid state dependency
+        const token = getTokenFromStorage();
         if (token && config.url?.includes('/admin/')) {
           config.headers.Authorization = `Bearer ${token}`;
         }
@@ -365,7 +369,7 @@ export const AuthProvider = ({ children }) => {
       (error) => Promise.reject(error)
     );
 
-    const responseInterceptor = api.interceptors.response.use(
+    const responseInterceptor = axiosInstance.interceptors.response.use(
       (response) => response,
       async (error) => {
         const originalRequest = error.config;
@@ -377,17 +381,33 @@ export const AuthProvider = ({ children }) => {
           
           originalRequest._retry = true;
 
-          // Try to refresh token
-          const refreshed = await refreshToken();
+          // Try to refresh token using the refresh_token from storage
+          const refresh_token = getRefreshTokenFromStorage();
           
-          if (refreshed) {
-            // Retry original request with new token
-            const newToken = getTokenFromStorage();
-            originalRequest.headers.Authorization = `Bearer ${newToken}`;
-            return api(originalRequest);
+          if (refresh_token) {
+            try {
+              const response = await api.post('/auth/admin/refresh', {
+                refresh_token
+              });
+
+              if (response.data.success) {
+                const tokens = response.data.data;
+                setTokensInStorage(tokens);
+                
+                // Retry original request with new token
+                originalRequest.headers.Authorization = `Bearer ${tokens.access_token}`;
+                return axiosInstance(originalRequest);
+              }
+            } catch (refreshError) {
+              // Refresh failed, clear tokens
+              clearTokensFromStorage();
+              // Don't call logout() here to avoid state updates
+              window.location.href = '/admin/login';
+            }
           } else {
-            // Refresh failed, logout user
-            logout();
+            // No refresh token, redirect to login
+            clearTokensFromStorage();
+            window.location.href = '/admin/login';
           }
         }
 
@@ -397,11 +417,10 @@ export const AuthProvider = ({ children }) => {
 
     // Cleanup interceptors on unmount
     return () => {
-      api.interceptors.request.eject(requestInterceptor);
-      api.interceptors.response.eject(responseInterceptor);
+      axiosInstance.interceptors.request.eject(requestInterceptor);
+      axiosInstance.interceptors.response.eject(responseInterceptor);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.tokens]);
+  }, []);
 
   // Check authentication status on component mount
   useEffect(() => {

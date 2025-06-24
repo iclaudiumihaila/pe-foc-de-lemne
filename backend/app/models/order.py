@@ -597,39 +597,15 @@ class Order:
     @classmethod
     def _generate_unique_order_number(cls) -> str:
         """
-        Generate unique order number in format ORD-YYYYMMDD-NNNN.
+        Generate unique incremental order number starting from 10000.
+        Uses OrderService for consistent numbering across the application.
         
         Returns:
-            str: Unique order number
+            str: Unique order number (e.g., "10001", "10002", etc.)
         """
-        today = datetime.utcnow().strftime('%Y%m%d')
-        prefix = f"ORD-{today}-"
-        
-        # Find highest number for today
-        db = get_database()
-        collection = db[cls.COLLECTION_NAME]
-        
-        # Search for orders with today's prefix
-        pattern = f"^{re.escape(prefix)}"
-        cursor = collection.find(
-            {'order_number': {'$regex': pattern}},
-            {'order_number': 1}
-        ).sort('order_number', -1).limit(1)
-        
-        # Determine next number
-        next_num = 1
-        for doc in cursor:
-            existing = doc['order_number']
-            if existing.startswith(prefix):
-                try:
-                    num_str = existing[len(prefix):]
-                    next_num = int(num_str) + 1
-                    break
-                except ValueError:
-                    pass
-        
-        # Format with zero padding
-        return f"{prefix}{next_num:04d}"
+        from app.services.order_service import OrderService
+        order_service = OrderService()
+        return order_service._generate_order_number()
     
     @staticmethod
     def _validate_and_normalize_phone(phone: str) -> str:

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Checkout Page</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <h1>Testing Checkout Page</h1>
+    <p>Click the button below to open the checkout page in a new window:</p>
+    <button onclick="window.open('http://localhost:3000/comanda', '_blank')">
+        Open Checkout Page
+    </button>
+    
+    <h2>Mobile View</h2>
+    <iframe 
+        src="http://localhost:3000/comanda" 
+        style="width: 375px; height: 667px; border: 1px solid #ccc; border-radius: 10px;">
+    </iframe>
+    
+    <h2>Desktop View</h2>
+    <iframe 
+        src="http://localhost:3000/comanda" 
+        style="width: 1024px; height: 768px; border: 1px solid #ccc; margin-top: 20px;">
+    </iframe>
+</body>
+</html>

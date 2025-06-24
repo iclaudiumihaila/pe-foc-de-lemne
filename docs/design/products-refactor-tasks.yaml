@@ -1,0 +1,42 @@
+tasks:
+  - id: "103"
+    title: "Import ProductCard in Products.jsx"
+    description: "Add import statement for ProductCard component"
+    deliverable: "Updated imports in Products.jsx"
+    dependencies: []
+    estimate: "2min"
+    
+  - id: "104"
+    title: "Create product data transformer"
+    description: "Add transformProduct function to convert API data to ProductCard format with correct field mapping"
+    deliverable: "transformProduct function in Products.jsx"
+    dependencies: ["103"]
+    estimate: "5min"
+    
+  - id: "105"
+    title: "Replace inline product cards"
+    description: "Replace lines 304-369 with ProductCard component wrapped in div for stock warnings"
+    deliverable: "Updated product grid using ProductCard"
+    dependencies: ["104"]
+    estimate: "10min"
+    
+  - id: "106"
+    title: "Add stock warning display"
+    description: "Preserve stock warning feature below ProductCard for items with quantity < 10"
+    deliverable: "Stock warnings showing below product cards"
+    dependencies: ["105"]
+    estimate: "5min"
+    
+  - id: "107"
+    title: "Clean up duplicate code"
+    description: "Remove duplicate formatPrice function and use ProductGridSkeleton"
+    deliverable: "Cleaned up Products.jsx without duplicate code"
+    dependencies: ["106"]
+    estimate: "3min"
+    
+  - id: "108"
+    title: "Test all product features"
+    description: "Verify: add-to-cart animations work, stock warnings display, out-of-stock state, loading skeleton"
+    deliverable: "Fully tested Products page with all features working"
+    dependencies: ["107"]
+    estimate: "5min"

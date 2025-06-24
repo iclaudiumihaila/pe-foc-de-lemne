@@ -432,34 +432,39 @@ class OrderService:
     
     def _generate_order_number(self) -> str:
         """
-        Generate unique order number in format ORD-YYYYMMDD-NNNNNN.
+        Generate unique incremental order number starting from 10000.
         
         Returns:
-            str: Unique order number
+            str: Unique order number (e.g., "10001", "10002", etc.)
         """
         try:
-            # Get current date for order number
-            date_part = datetime.utcnow().strftime('%Y%m%d')
-            
-            # Get next sequence number for the day using atomic operation
+            # Use a global counter that starts at 10000
             result = self.order_sequences_collection.find_one_and_update(
-                {'date': date_part},
+                {'_id': 'global_order_counter'},
                 {'$inc': {'sequence': 1}},
                 upsert=True,
                 return_document=True  # Return the updated document
             )
             
-            sequence = result['sequence']
-            order_number = f"ORD-{date_part}-{sequence:06d}"
+            # If this is the first order, start from 10000
+            if 'sequence' not in result or result['sequence'] < 10000:
+                result = self.order_sequences_collection.find_one_and_update(
+                    {'_id': 'global_order_counter'},
+                    {'$set': {'sequence': 10000}},
+                    upsert=True,
+                    return_document=True
+                )
+            
+            order_number = str(result['sequence'])
             
             logger.info(f"Generated order number: {order_number}")
             return order_number
             
         except Exception as e:
             logger.error(f"Error generating order number: {str(e)}")
-            # Fallback to timestamp-based number
-            timestamp = int(datetime.utcnow().timestamp() * 1000000) % 1000000
-            fallback_number = f"ORD-{date_part}-{timestamp:06d}"
+            # Fallback to timestamp-based number with high starting value
+            timestamp = int(datetime.utcnow().timestamp())
+            fallback_number = str(10000 + (timestamp % 90000))
             logger.warning(f"Using fallback order number: {fallback_number}")
             return fallback_number
     

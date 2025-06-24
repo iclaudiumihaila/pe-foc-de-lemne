@@ -6,6 +6,9 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontSize: {
+        'sm': ['16px', '20px'], // Override text-sm to prevent iOS auto-zoom on inputs
+      },
       colors: {
         primary: {
           50: '#f0f4ff',

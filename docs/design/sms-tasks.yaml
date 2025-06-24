@@ -1,0 +1,175 @@
+# Atomic Tasks for SMS System Implementation
+
+tasks:
+  # Database Setup
+  - id: "22"
+    slug: "create-sms-provider-model"
+    description: "Create MongoDB model for SMS provider configuration"
+    deliverable: "SmsProvider model with encryption support"
+    dependencies: []
+    estimated_effort: "20 minutes"
+    
+  - id: "23"
+    slug: "create-sms-logs-indexes"
+    description: "Create indexes for SMS logs collection"
+    deliverable: "Optimized indexes for querying SMS logs"
+    dependencies: []
+    estimated_effort: "10 minutes"
+    
+  # Provider Interface
+  - id: "24"
+    slug: "create-provider-interface"
+    description: "Create abstract SMS provider interface"
+    deliverable: "Abstract base class defining provider contract"
+    dependencies: []
+    estimated_effort: "15 minutes"
+    
+  - id: "25"
+    slug: "implement-mock-provider"
+    description: "Implement mock SMS provider for development"
+    deliverable: "Working mock provider for testing"
+    dependencies: ["24"]
+    estimated_effort: "20 minutes"
+    
+  # SMSO Provider
+  - id: "26"
+    slug: "implement-smso-client"
+    description: "Create SMSO API client with authentication"
+    deliverable: "SMSO client class with API methods"
+    dependencies: []
+    estimated_effort: "30 minutes"
+    
+  - id: "27"
+    slug: "implement-smso-provider"
+    description: "Implement SMSO provider using interface"
+    deliverable: "SMSO provider with send/status/balance methods"
+    dependencies: ["24", "26"]
+    estimated_effort: "25 minutes"
+    
+  # SMS Manager
+  - id: "28"
+    slug: "create-sms-manager"
+    description: "Create SMS manager for provider selection"
+    deliverable: "Manager handling provider selection and failover"
+    dependencies: ["24"]
+    estimated_effort: "25 minutes"
+    
+  - id: "29"
+    slug: "implement-sms-logging"
+    description: "Add SMS operation logging"
+    deliverable: "Comprehensive logging for all SMS operations"
+    dependencies: ["22", "28"]
+    estimated_effort: "20 minutes"
+    
+  # Configuration
+  - id: "30"
+    slug: "implement-encryption-utils"
+    description: "Create encryption utilities for API keys"
+    deliverable: "Encryption/decryption functions for sensitive data"
+    dependencies: []
+    estimated_effort: "15 minutes"
+    
+  - id: "31"
+    slug: "create-provider-config-service"
+    description: "Service for managing provider configurations"
+    deliverable: "CRUD operations for provider configs"
+    dependencies: ["22", "30"]
+    estimated_effort: "25 minutes"
+    
+  # Admin API
+  - id: "32"
+    slug: "create-admin-sms-routes"
+    description: "Create admin routes for SMS management"
+    deliverable: "API endpoints for provider management"
+    dependencies: ["31"]
+    estimated_effort: "30 minutes"
+    
+  - id: "33"
+    slug: "create-sms-statistics-service"
+    description: "Service for SMS usage statistics"
+    deliverable: "Statistics aggregation and reporting"
+    dependencies: ["29"]
+    estimated_effort: "25 minutes"
+    
+  # Integration
+  - id: "34"
+    slug: "integrate-sms-manager-checkout"
+    description: "Replace SMSService with new SMS manager in checkout"
+    deliverable: "Checkout using new SMS system"
+    dependencies: ["28", "29"]
+    estimated_effort: "20 minutes"
+    
+  - id: "35"
+    slug: "add-provider-health-check"
+    description: "Implement provider health monitoring"
+    deliverable: "Background health checks for providers"
+    dependencies: ["28"]
+    estimated_effort: "20 minutes"
+    
+  # Admin UI
+  - id: "36"
+    slug: "create-provider-list-component"
+    description: "React component for listing SMS providers"
+    deliverable: "Provider list with status indicators"
+    dependencies: []
+    estimated_effort: "25 minutes"
+    
+  - id: "37"
+    slug: "create-provider-config-form"
+    description: "React form for provider configuration"
+    deliverable: "Form for adding/editing providers"
+    dependencies: []
+    estimated_effort: "30 minutes"
+    
+  - id: "38"
+    slug: "create-sms-test-component"
+    description: "Component for testing SMS sending"
+    deliverable: "Test interface with phone input"
+    dependencies: []
+    estimated_effort: "20 minutes"
+    
+  - id: "39"
+    slug: "create-sms-statistics-dashboard"
+    description: "Dashboard showing SMS usage stats"
+    deliverable: "Charts and metrics display"
+    dependencies: []
+    estimated_effort: "30 minutes"
+    
+  # Testing
+  - id: "40"
+    slug: "test-smso-integration"
+    description: "Integration test with SMSO API"
+    deliverable: "Verified SMSO provider functionality"
+    dependencies: ["27", "34"]
+    estimated_effort: "25 minutes"
+    
+  - id: "41"
+    slug: "test-provider-switching"
+    description: "Test switching between providers"
+    deliverable: "Verified provider switching works"
+    dependencies: ["32", "36"]
+    estimated_effort: "20 minutes"
+    
+  - id: "42"
+    slug: "test-checkout-with-sms"
+    description: "End-to-end checkout test with real SMS"
+    deliverable: "Complete checkout flow working"
+    dependencies: ["40"]
+    estimated_effort: "30 minutes"
+
+review_points:
+  - after_task: "31"
+    review_focus: "Security implementation (encryption, access control)"
+  - after_task: "35"
+    review_focus: "SMS system completeness and reliability"
+  - after_task: "39"
+    review_focus: "Admin interface usability"
+  - after_task: "42"
+    review_focus: "Full integration and production readiness"
+
+notes:
+  - All tasks are atomic with single deliverables
+  - Provider system designed for extensibility
+  - Security-first approach with encryption
+  - Admin has full control over SMS providers
+  - Maintains backward compatibility with existing checkout

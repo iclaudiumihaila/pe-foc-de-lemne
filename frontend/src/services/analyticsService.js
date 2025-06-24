@@ -9,7 +9,7 @@ import axios from 'axios';
 
 // Analytics API configuration
 const ANALYTICS_API_CONFIG = {
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8080/api',
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8000/api',
   timeout: 10000,
   retryAttempts: 3,
   retryDelay: 1000

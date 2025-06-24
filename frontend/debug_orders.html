@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Orders API</title>
+</head>
+<body>
+    <h1>Debug Orders API</h1>
+    <button onclick="testOrders()">Test Orders API</button>
+    <pre id="result"></pre>
+
+    <script>
+        async function testOrders() {
+            const resultEl = document.getElementById('result');
+            
+            try {
+                // Get token from localStorage
+                const token = localStorage.getItem('auth_access_token');
+                resultEl.textContent = `Token: ${token ? token.substring(0, 50) + '...' : 'NO TOKEN FOUND'}\n\n`;
+                
+                if (!token) {
+                    resultEl.textContent += 'ERROR: No auth token in localStorage!';
+                    return;
+                }
+                
+                // Test API call
+                const response = await fetch('http://localhost:8000/api/admin/orders', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                resultEl.textContent += `Status: ${response.status}\n`;
+                
+                const data = await response.json();
+                resultEl.textContent += `Response:\n${JSON.stringify(data, null, 2)}`;
+                
+            } catch (error) {
+                resultEl.textContent += `ERROR: ${error.message}`;
+            }
+        }
+        
+        // Auto-run on load
+        window.onload = testOrders;
+    </script>
+</body>
+</html>

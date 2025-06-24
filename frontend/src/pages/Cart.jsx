@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useCartContext } from '../contexts/CartContext';
 import CartItem from '../components/cart/CartItem';
@@ -7,6 +7,7 @@ import { PageLoading } from '../components/common/Loading';
 import ErrorMessage, { NetworkError, ServerError } from '../components/common/ErrorMessage';
 import { SectionErrorBoundary } from '../components/common/ErrorBoundary';
 import { useApiToast } from '../components/common/Toast';
+import { ArrowLeft, ShoppingBag, Trash2 } from 'lucide-react';
 
 const Cart = () => {
   const { 
@@ -19,6 +20,18 @@ const Cart = () => {
   
   const toast = useApiToast();
   const [clearingCart, setClearingCart] = useState(false);
+  
+  // Detect mobile device - must be before any conditional returns
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Handle cart clearing with error handling
   const handleClearCart = async () => {
@@ -50,209 +63,128 @@ const Cart = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-7xl mx-auto">
-        {/* Breadcrumb Navigation */}
-        <nav className="mb-6 text-sm text-gray-600">
-          <Link to="/" className="hover:text-green-600 transition-colors">
-            Acasă
+    <div className="min-h-screen bg-white">
+      {/* Modern Mobile Header */}
+      <header className="sticky top-0 z-40 bg-white shadow-sm">
+        <div className="flex items-center px-4 py-3">
+          <Link to="/products" className="p-2 -m-2 hover:bg-gray-100 rounded-full transition-colors">
+            <ArrowLeft className="w-6 h-6 text-gray-700" />
           </Link>
-          <span className="mx-2">›</span>
-          <span className="text-gray-900">Coșul de cumpărături</span>
-        </nav>
-
-        {/* Page Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Coșul tău de cumpărături
+          <h1 className="flex-1 text-center text-xl font-semibold text-gray-900">
+            Coșul tău
           </h1>
-          {cartItemCount > 0 ? (
-            <p className="text-lg text-gray-600">
-              Ai {cartItemCount} {cartItemCount === 1 ? 'produs' : 'produse'} în coș. 
-              Verifică-le înainte de a plasa comanda.
-            </p>
-          ) : (
-            <p className="text-lg text-gray-600">
-              Coșul tău este gol. Descoperă produsele noastre locale și naturale.
-            </p>
+          {cartItemCount > 0 && (
+            <button
+              onClick={handleClearCart}
+              disabled={clearingCart}
+              className="p-2 -m-2 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50"
+              aria-label="Golește coșul"
+            >
+              <Trash2 className="w-5 h-5 text-gray-600" />
+            </button>
           )}
         </div>
+      </header>
 
-        {/* Cart Error Display */}
-        {cartError && (
-          <div className="mb-6">
-            <SectionErrorBoundary>
-              {cartError.isNetworkError ? (
-                <NetworkError 
-                  onRetry={() => window.location.reload()}
-                />
-              ) : cartError.status >= 500 ? (
-                <ServerError 
-                  onRetry={() => window.location.reload()}
-                />
-              ) : (
-                <ErrorMessage 
-                  message={cartError.message || 'Eroare la încărcarea coșului de cumpărături'}
-                  showRetry={true}
-                  onRetry={() => window.location.reload()}
-                />
-              )}
-            </SectionErrorBoundary>
-          </div>
-        )}
+      {/* Cart Error Display */}
+      {cartError && (
+        <div className="m-4">
+          <SectionErrorBoundary>
+            {cartError.isNetworkError ? (
+              <NetworkError 
+                onRetry={() => window.location.reload()}
+              />
+            ) : cartError.status >= 500 ? (
+              <ServerError 
+                onRetry={() => window.location.reload()}
+              />
+            ) : (
+              <ErrorMessage 
+                message={cartError.message || 'Eroare la încărcarea coșului de cumpărături'}
+                showRetry={true}
+                onRetry={() => window.location.reload()}
+              />
+            )}
+          </SectionErrorBoundary>
+        </div>
+      )}
 
-        {cartItemCount === 0 ? (
-          /* Empty Cart State */
-          <div className="max-w-2xl mx-auto">
-            <EmptyCartSummary />
-            
-            {/* Additional empty cart messaging */}
-            <div className="mt-8 bg-green-50 border border-green-200 rounded-lg p-6 text-center">
-              <h3 className="text-lg font-semibold text-green-800 mb-3">
-                🌱 Descoperă produsele noastre locale
-              </h3>
-              <p className="text-green-700 mb-4">
-                Avem o gamă variată de produse proaspete și naturale de la producătorii din zona ta. 
-                Toate sunt verificate pentru calitate și prospețime.
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-green-600">
-                <div>🍎 Fructe și legume de sezon</div>
-                <div>🍯 Miere și produse apicole</div>
-                <div>🧀 Lactate tradiționale</div>
-                <div>🥚 Ouă proaspete de țară</div>
+      {cartItemCount === 0 ? (
+        /* Empty Cart State */
+        <div className="flex-1 flex items-center justify-center p-4 min-h-[calc(100vh-200px)]">
+          <div className="text-center max-w-sm">
+            <div className="mb-6">
+              <div className="w-24 h-24 bg-gray-100 rounded-full mx-auto flex items-center justify-center">
+                <ShoppingBag className="w-12 h-12 text-gray-400" />
               </div>
             </div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              Coșul tău este gol
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Adaugă produse pentru a continua cumpărăturile
+            </p>
+            <Link
+              to="/products"
+              className="inline-flex items-center justify-center w-full px-6 py-3 bg-green-600 text-white font-medium rounded-full hover:bg-green-700 transition-colors"
+            >
+              Explorează produsele
+            </Link>
           </div>
-        ) : (
-          /* Cart Items and Summary */
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-            {/* Cart Items Section */}
-            <section className="lg:col-span-2">
-              <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-semibold text-gray-900">
-                    Produsele tale ({cartItemCount})
-                  </h2>
-                  {cartItemCount > 0 && (
-                    <button
-                      onClick={handleClearCart}
-                      disabled={clearingCart}
-                      className="text-sm text-red-600 hover:text-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-                    >
-                      {clearingCart ? (
-                        <>
-                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          Se golește...
-                        </>
-                      ) : (
-                        'Golește coșul'
-                      )}
-                    </button>
+        </div>
+      ) : (
+        <div className="flex flex-col h-[calc(100vh-64px)]">
+          {/* Cart Items - Scrollable Area */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="px-4 py-2">
+              {cartItems.map((item, index) => (
+                <div key={item.id}>
+                  <CartItem 
+                    item={item}
+                    isMobile={true}
+                  />
+                  {index < cartItems.length - 1 && (
+                    <div className="h-px bg-gray-200 mx-4" />
                   )}
                 </div>
+              ))}
+            </div>
+            
+            {/* Add some padding at the bottom for better scrolling */}
+            <div className="h-32" />
+          </div>
 
-                {/* Cart Items List */}
-                <div className="space-y-4">
-                  {cartItems.map((item) => (
-                    <SectionErrorBoundary key={item.id}>
-                      <CartItem 
-                        key={item.id} 
-                        item={item}
-                      />
-                    </SectionErrorBoundary>
-                  ))}
+          {/* Fixed Bottom Summary */}
+          <div className="fixed bottom-0 left-0 right-0 bg-white shadow-[0_-4px_12px_rgba(0,0,0,0.08)] z-30">
+            <div className="px-4 py-3">
+              {/* Summary Row */}
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <p className="text-sm text-gray-600">Total ({cartItemCount} produse)</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {new Intl.NumberFormat('ro-RO', {
+                      style: 'currency',
+                      currency: 'RON'
+                    }).format(cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0))}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-gray-500">Livrare</p>
+                  <p className="text-sm font-medium text-green-600">Gratuită</p>
                 </div>
               </div>
-
-              {/* Continue Shopping Section */}
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                  Continuă cumpărăturile
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  Explorează mai multe produse locale și naturale din catalogul nostru.
-                </p>
-                <Link
-                  to="/products"
-                  className="inline-flex items-center px-4 py-3 border border-green-600 text-green-600 rounded-lg hover:bg-green-50 transition-colors min-h-[44px] justify-center"
-                >
-                  <span className="mr-2">🛒</span>
-                  Vezi toate produsele
-                </Link>
-              </div>
-            </section>
-
-            {/* Cart Summary Sidebar */}
-            <aside className="lg:col-span-1">
-              <div className="sticky top-4">
-                <SectionErrorBoundary>
-                  <CartSummary />
-                </SectionErrorBoundary>
-              </div>
-            </aside>
-          </div>
-        )}
-
-        {/* Local Producer Information */}
-        {cartItemCount > 0 && (
-          <div className="mt-12 bg-green-50 border border-green-200 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-green-800 mb-4">
-              💡 Beneficiile comenzii tale locale
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm text-green-700">
-              <div className="text-center">
-                <div className="text-2xl mb-2">🌱</div>
-                <h4 className="font-medium mb-1">Produse naturale</h4>
-                <p>Fără pesticide și chimicale dăunătoare</p>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl mb-2">🚚</div>
-                <h4 className="font-medium mb-1">Livrare gratuită</h4>
-                <p>Transport local rapid și ecologic</p>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl mb-2">🤝</div>
-                <h4 className="font-medium mb-1">Susții comunitatea</h4>
-                <p>Ajuți familiile de fermieri locali</p>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl mb-2">✅</div>
-                <h4 className="font-medium mb-1">Calitate garantată</h4>
-                <p>Produse verificate și certificate</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Help and Support Section */}
-        <div className="mt-8 text-center">
-          <div className="bg-white rounded-lg shadow-sm p-6 max-w-2xl mx-auto">
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">
-              Ai nevoie de ajutor?
-            </h3>
-            <p className="text-gray-600 mb-4">
-              Echipa noastră este aici să te ajute cu orice întrebări despre produse sau comenzi.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center text-sm">
-              <div className="flex items-center justify-center gap-2 text-gray-600">
-                <span>📧</span>
-                <span>contact@pefocdelemne.ro</span>
-              </div>
-              <div className="flex items-center justify-center gap-2 text-gray-600">
-                <span>📞</span>
-                <span>0700 123 456</span>
-              </div>
-              <div className="flex items-center justify-center gap-2 text-gray-600">
-                <span>⏰</span>
-                <span>Luni - Vineri, 9:00 - 18:00</span>
-              </div>
+              
+              {/* Checkout Button */}
+              <Link
+                to="/comanda"
+                className="block w-full bg-green-600 text-white text-center py-3 rounded-lg font-medium text-base hover:bg-green-700 transition-colors shadow-sm"
+              >
+                Finalizează comanda
+              </Link>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

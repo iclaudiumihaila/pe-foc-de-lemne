@@ -113,9 +113,14 @@ def list_products():
         # Build query
         query = {}
         
-        # Add text search if query provided
+        # Add search if query provided - use regex for partial matching
         if search_query:
-            query['$text'] = {'$search': search_query}
+            # Case-insensitive regex search in name and description
+            search_regex = {'$regex': search_query, '$options': 'i'}
+            query['$or'] = [
+                {'name': search_regex},
+                {'description': search_regex}
+            ]
         
         # Filter by availability
         if available_only:
@@ -167,15 +172,8 @@ def list_products():
             {'$match': query}
         ]
         
-        # Add search score and sorting
-        if search_query:
-            # Add text search score
-            pipeline.append({'$addFields': {'score': {'$meta': 'textScore'}}})
-            # Sort by relevance score for search results
-            pipeline.append({'$sort': {'score': {'$meta': 'textScore'}}})
-        else:
-            # Use normal sorting when not searching
-            pipeline.append({'$sort': {sort_by: sort_direction}})
+        # Add sorting
+        pipeline.append({'$sort': {sort_by: sort_direction}})
         
         # Add facet stage for pagination and category lookup
         pipeline.append({
@@ -218,9 +216,6 @@ def list_products():
             product = Product(product_doc)
             product_dict = product.to_dict()
             
-            # Add search score if searching
-            if search_query and 'score' in product_doc:
-                product_dict['search_score'] = product_doc.get('score', 0)
             
             # Add category information if available
             if 'category' in product_doc and product_doc['category']:

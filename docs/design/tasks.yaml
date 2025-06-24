@@ -800,10 +800,92 @@ tasks:
     estimate: "20min"
     testable: "Application is ready for production deployment with all requirements met"
 
+  # Phase 22: UI Animation Enhancements
+  - id: "98_add_to_cart_button_component"
+    title: "Create animated AddToCartButton component"
+    description: "Create button component with success state animation and checkmark"
+    deliverable: "frontend/src/components/common/AddToCartButton.jsx"
+    dependencies: ["43_tailwind_css_configuration"]
+    estimate: "25min"
+    testable: "Button shows success animation when clicked"
+
+  - id: "99_floating_indicator_component"
+    title: "Create FloatingIndicator animation component"
+    description: "Implement '+1' floating indicator that rises and fades"
+    deliverable: "frontend/src/components/animations/FloatingIndicator.jsx"
+    dependencies: ["43_tailwind_css_configuration"]
+    estimate: "20min"
+    testable: "Indicator animates up and fades out correctly"
+
+  - id: "100_cart_icon_pulse_component"
+    title: "Create CartIconPulse animation component"
+    description: "Implement pulse animation wrapper for cart icon in header"
+    deliverable: "frontend/src/components/animations/CartIconPulse.jsx"
+    dependencies: ["52_cart_context_creation"]
+    estimate: "15min"
+    testable: "Cart icon pulses when items are added"
+
+  - id: "101_animation_css_keyframes"
+    title: "Add animation keyframes to CSS"
+    description: "Define CSS keyframes for float-up, pulse, and success animations"
+    deliverable: "Animation keyframes in frontend/src/styles/animations.css"
+    dependencies: ["43_tailwind_css_configuration"]
+    estimate: "15min"
+    testable: "CSS animations work smoothly across browsers"
+
+  - id: "102_update_product_card_button"
+    title: "Update ProductCard to use AddToCartButton"
+    description: "Replace standard button with animated AddToCartButton component"
+    deliverable: "Updated frontend/src/components/product/ProductCard.jsx"
+    dependencies: ["98_add_to_cart_button_component", "49_product_card_component_creation"]
+    estimate: "10min"
+    testable: "ProductCard shows animation when adding to cart"
+
+  - id: "103_update_product_detail_button"
+    title: "Update ProductDetail to use AddToCartButton"
+    description: "Replace standard button with animated AddToCartButton component"
+    deliverable: "Updated frontend/src/components/product/ProductDetail.jsx"
+    dependencies: ["98_add_to_cart_button_component"]
+    estimate: "10min"
+    testable: "ProductDetail page shows animation when adding to cart"
+
+  - id: "104_update_header_cart_icon"
+    title: "Update Header to use CartIconPulse"
+    description: "Wrap cart icon with pulse animation component"
+    deliverable: "Updated frontend/src/components/common/Header.jsx"
+    dependencies: ["100_cart_icon_pulse_component", "45_header_component_creation"]
+    estimate: "10min"
+    testable: "Header cart icon pulses when items are added"
+
+  - id: "105_animation_accessibility"
+    title: "Add accessibility features to animations"
+    description: "Add ARIA live regions and respect prefers-reduced-motion"
+    deliverable: "Accessibility updates to animation components"
+    dependencies: ["98_add_to_cart_button_component", "99_floating_indicator_component"]
+    estimate: "20min"
+    testable: "Animations are accessible and respect motion preferences"
+
+  - id: "106_animation_component_tests"
+    title: "Create tests for animation components"
+    description: "Write tests for all animation components and interactions"
+    deliverable: "Test files for AddToCartButton, FloatingIndicator, CartIconPulse"
+    dependencies: ["105_animation_accessibility"]
+    estimate: "25min"
+    testable: "All animation component tests pass"
+
+  - id: "107_animation_integration_test"
+    title: "Test complete animation flow"
+    description: "End-to-end test of add to cart animation sequence"
+    deliverable: "Integration test for complete animation flow"
+    dependencies: ["106_animation_component_tests"]
+    estimate: "15min"
+    testable: "Full animation sequence works correctly from button to cart icon"
+
 # Task Execution Notes:
 # - Each task has exactly one deliverable and is independently testable
 # - Dependencies ensure proper task ordering and prevent blocking issues
 # - Test tasks are included throughout to catch issues early
 # - Error handling and resilience tasks address external service failure scenarios
 # - All critical issues from Architect B review have been addressed
-# - Total estimated time: ~21 hours of focused development work
+# - Animation tasks added for enhanced UX (Phase 22)
+# - Total estimated time: ~23.5 hours of focused development work

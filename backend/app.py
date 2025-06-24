@@ -7,7 +7,7 @@ It creates and configures the Flask app and runs the development server.
 
 import os
 import logging
-from flask import Flask
+from flask import Flask, send_from_directory
 from flask_cors import CORS
 from app import create_app
 from app.config import Config, DevelopmentConfig, ProductionConfig
@@ -62,6 +62,13 @@ def create_application():
             'environment': env
         }
     
+    # Serve uploaded images (for development - in production use Nginx)
+    @app.route('/uploads/<path:filename>')
+    def serve_upload(filename):
+        """Serve uploaded files with support for subdirectories."""
+        upload_folder = os.path.join(os.path.dirname(__file__), 'uploads')
+        return send_from_directory(upload_folder, filename)
+    
     # Add CORS preflight handling
     @app.before_request
     def handle_preflight():
@@ -111,7 +118,7 @@ def main():
         
         # Get configuration from environment or app config
         host = os.getenv('FLASK_HOST', app.config.get('HOST', '127.0.0.1'))
-        port = int(os.getenv('FLASK_PORT', app.config.get('PORT', 8080)))
+        port = int(os.getenv('FLASK_PORT', app.config.get('PORT', 8000)))
         debug = os.getenv('FLASK_DEBUG', str(app.config.get('DEBUG', True))).lower() == 'true'
         
         logging.info(f"Starting Flask development server on {host}:{port}")

@@ -1,0 +1,283 @@
+# Admin Functionality Implementation Tasks
+# Generated: 2025-06-22T19:33:00Z
+# Updated: 2025-06-22T19:38:00Z (v2 - post Architect B review)
+# Following CLAUDE.md atomic task principles
+
+# Note: Admin auth, layout, and navigation already exist and work
+
+phase_1_common_components:
+  - id: "19"
+    slug: "create-admin-table"
+    description: "Create reusable AdminTable component"
+    deliverable: "AdminTable component renders with props"
+    
+  - id: "20"
+    slug: "create-admin-modal"
+    description: "Create reusable AdminModal component"
+    deliverable: "AdminModal opens and closes with content"
+    
+  - id: "21"
+    slug: "create-admin-pagination"
+    description: "Create AdminPagination component"
+    deliverable: "Pagination component renders page numbers"
+    
+  - id: "22"
+    slug: "create-admin-form-utils"
+    description: "Create AdminForm utility functions"
+    deliverable: "Form validation and error display utilities"
+
+phase_2_routing:
+  - id: "23"
+    slug: "add-products-route"
+    description: "Add /admin/products route to App.jsx"
+    deliverable: "Route renders placeholder at /admin/products"
+    
+  - id: "24"
+    slug: "add-categories-route"
+    description: "Add /admin/categories route to App.jsx"
+    deliverable: "Route renders placeholder at /admin/categories"
+    
+  - id: "25"
+    slug: "add-orders-route"
+    description: "Add /admin/orders route to App.jsx"
+    deliverable: "Route renders placeholder at /admin/orders"
+    
+  - id: "26"
+    slug: "add-order-details-route"
+    description: "Add /admin/orders/:id route to App.jsx"
+    deliverable: "Route renders placeholder with order ID"
+    
+  - id: "27"
+    slug: "add-sms-providers-route"
+    description: "Add /admin/sms-providers route to App.jsx"
+    deliverable: "Route renders placeholder at /admin/sms-providers"
+
+phase_3_product_pages:
+  - id: "28"
+    slug: "create-products-page"
+    description: "Create Products.jsx with basic layout"
+    deliverable: "Products page renders with title"
+    
+  - id: "29"
+    slug: "create-product-service"
+    description: "Create adminProductService.js with getProducts"
+    deliverable: "Service exports getProducts function"
+    
+  - id: "30"
+    slug: "add-product-list-api"
+    description: "Connect Products page to mock API"
+    deliverable: "Products page shows loading state"
+    
+  - id: "31"
+    slug: "integrate-admin-table"
+    description: "Use AdminTable in Products page"
+    deliverable: "Products display in AdminTable"
+    
+  - id: "32"
+    slug: "add-product-search"
+    description: "Add search input to Products page"
+    deliverable: "Search input filters product list"
+    
+  - id: "33"
+    slug: "add-product-pagination"
+    description: "Add AdminPagination to Products page"
+    deliverable: "Products paginate correctly"
+    
+  - id: "34"
+    slug: "create-add-product-button"
+    description: "Add 'Add Product' button to Products page"
+    deliverable: "Button opens empty modal"
+    
+  - id: "35"
+    slug: "create-product-form"
+    description: "Create product form in modal"
+    deliverable: "Form displays all product fields"
+    
+  - id: "36"
+    slug: "implement-create-product"
+    description: "Implement product creation API call"
+    deliverable: "Can create new products"
+    
+  - id: "37"
+    slug: "add-edit-product-button"
+    description: "Add edit button to product rows"
+    deliverable: "Edit button opens modal with data"
+    
+  - id: "38"
+    slug: "implement-update-product"
+    description: "Implement product update API call"
+    deliverable: "Can update existing products"
+    
+  - id: "39"
+    slug: "add-delete-product-button"
+    description: "Add delete button with confirmation"
+    deliverable: "Delete button shows confirmation modal"
+    
+  - id: "40"
+    slug: "implement-delete-product"
+    description: "Implement product deletion API call"
+    deliverable: "Can delete products"
+
+phase_4_category_pages:
+  - id: "41"
+    slug: "create-categories-page"
+    description: "Create Categories.jsx with layout"
+    deliverable: "Categories page renders with title"
+    
+  - id: "42"
+    slug: "create-category-service"
+    description: "Create adminCategoryService.js"
+    deliverable: "Service exports getCategories function"
+    
+  - id: "43"
+    slug: "create-category-tree-component"
+    description: "Create CategoryTree display component"
+    deliverable: "Tree structure renders categories"
+    
+  - id: "44"
+    slug: "connect-categories-api"
+    description: "Connect Categories page to API"
+    deliverable: "Categories display in tree format"
+    
+  - id: "45"
+    slug: "add-create-category-button"
+    description: "Add 'Add Category' button"
+    deliverable: "Button opens category form modal"
+    
+  - id: "46"
+    slug: "implement-create-category"
+    description: "Implement category creation"
+    deliverable: "Can create new categories"
+    
+  - id: "47"
+    slug: "implement-edit-category"
+    description: "Add edit functionality to categories"
+    deliverable: "Can edit category names and parents"
+    
+  - id: "48"
+    slug: "implement-delete-category"
+    description: "Add delete with product check"
+    deliverable: "Can safely delete empty categories"
+
+phase_5_order_pages:
+  - id: "49"
+    slug: "create-orders-page"
+    description: "Create Orders.jsx with layout"
+    deliverable: "Orders page renders with title"
+    
+  - id: "50"
+    slug: "create-order-service"
+    description: "Create adminOrderService.js"
+    deliverable: "Service exports getOrders function"
+    
+  - id: "51"
+    slug: "connect-orders-api"
+    description: "Connect Orders page to API"
+    deliverable: "Orders display in table"
+    
+  - id: "52"
+    slug: "add-order-filters"
+    description: "Add status and date filters"
+    deliverable: "Can filter orders by status/date"
+    
+  - id: "53"
+    slug: "create-order-details-page"
+    description: "Create OrderDetails.jsx page"
+    deliverable: "Order details page renders"
+    
+  - id: "54"
+    slug: "implement-order-details-view"
+    description: "Show full order information"
+    deliverable: "All order data displays correctly"
+    
+  - id: "55"
+    slug: "add-status-update-dropdown"
+    description: "Add status change dropdown"
+    deliverable: "Dropdown shows available statuses"
+    
+  - id: "56"
+    slug: "implement-status-update"
+    description: "Implement status update API call"
+    deliverable: "Can change order status"
+
+phase_6_backend_apis:
+  - id: "57"
+    slug: "create-admin-routes-init"
+    description: "Create admin routes __init__.py"
+    deliverable: "Admin blueprint registered"
+    
+  - id: "58"
+    slug: "create-products-api-list"
+    description: "Create GET /api/admin/products endpoint"
+    deliverable: "Returns paginated product list"
+    
+  - id: "59"
+    slug: "create-products-api-create"
+    description: "Create POST /api/admin/products endpoint"
+    deliverable: "Can create products via API"
+    
+  - id: "60"
+    slug: "create-products-api-update"
+    description: "Create PUT /api/admin/products/:id endpoint"
+    deliverable: "Can update products via API"
+    
+  - id: "61"
+    slug: "create-products-api-delete"
+    description: "Create DELETE /api/admin/products/:id endpoint"
+    deliverable: "Can delete products via API"
+    
+  - id: "62"
+    slug: "create-categories-api-list"
+    description: "Create GET /api/admin/categories endpoint"
+    deliverable: "Returns category list"
+    
+  - id: "63"
+    slug: "create-categories-api-crud"
+    description: "Create category CRUD endpoints"
+    deliverable: "Full category management via API"
+    
+  - id: "64"
+    slug: "create-orders-api-list"
+    description: "Create GET /api/admin/orders endpoint"
+    deliverable: "Returns order list with filters"
+    
+  - id: "65"
+    slug: "create-orders-api-details"
+    description: "Create GET /api/admin/orders/:id endpoint"
+    deliverable: "Returns full order details"
+    
+  - id: "66"
+    slug: "create-orders-api-status"
+    description: "Create PUT /api/admin/orders/:id/status"
+    deliverable: "Can update order status"
+
+phase_7_sms_providers:
+  - id: "67"
+    slug: "create-sms-providers-page"
+    description: "Create SMSProviders.jsx page"
+    deliverable: "SMS providers page renders"
+    
+  - id: "68"
+    slug: "create-sms-provider-service"
+    description: "Create smsProviderService.js"
+    deliverable: "Service handles provider CRUD"
+    
+  - id: "69"
+    slug: "implement-provider-list"
+    description: "Display SMS providers in table"
+    deliverable: "Providers show with status"
+    
+  - id: "70"
+    slug: "implement-provider-form"
+    description: "Create provider configuration form"
+    deliverable: "Can add/edit provider config"
+    
+  - id: "71"
+    slug: "implement-test-sms"
+    description: "Add test SMS functionality"
+    deliverable: "Can send test messages"
+    
+  - id: "72"
+    slug: "create-sms-provider-api"
+    description: "Create all SMS provider endpoints"
+    deliverable: "Full SMS provider API working"

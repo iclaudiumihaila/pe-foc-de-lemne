@@ -1,0 +1,104 @@
+{
+  "test_run": {
+    "date": "2025-06-22",
+    "tester": "Browser MCP Automation",
+    "environment": "development",
+    "frontend_url": "http://localhost:3000",
+    "backend_url": "http://localhost:8000"
+  },
+  "issues": [
+    {
+      "id": "ISSUE-001",
+      "title": "Add to Cart functionality completely broken",
+      "severity": "CRITICAL",
+      "category": "Shopping Cart",
+      "description": "The 'Adaugă în coș' button does not add products to cart. No visual feedback, no cart update, no console errors.",
+      "steps_to_reproduce": [
+        "Navigate to /products",
+        "Click 'Adaugă în coș' on any product",
+        "Check cart counter in header",
+        "Navigate to /cart"
+      ],
+      "expected": "Product added to cart, counter updates, cart page shows items",
+      "actual": "Nothing happens, cart remains at 0 items",
+      "affected_products": ["All products"],
+      "browser": "Chrome/Chromium",
+      "console_errors": [],
+      "network_errors": [],
+      "attempts": 6,
+      "status": "OPEN"
+    },
+    {
+      "id": "ISSUE-002",
+      "title": "Search input only captures first character",
+      "severity": "CRITICAL",
+      "category": "Search",
+      "description": "When typing in the search box, only the first character is registered, making search unusable",
+      "steps_to_reproduce": [
+        "Navigate to /products",
+        "Click in search box",
+        "Type 'mere' or any word",
+        "Observe search results"
+      ],
+      "expected": "Full word should be searched",
+      "actual": "Only first letter is used for search",
+      "test_cases": [
+        {"input": "mere", "captured": "m"},
+        {"input": "roșii", "captured": "r"},
+        {"input": "lapte", "captured": "l"}
+      ],
+      "browser": "Chrome/Chromium",
+      "status": "OPEN"
+    },
+    {
+      "id": "ISSUE-003",
+      "title": "Memory leak detected",
+      "severity": "HIGH",
+      "category": "Performance",
+      "description": "Console shows memory leak warning with high memory usage",
+      "console_messages": [
+        "🧠 Memorie folosită: 38.13 MB (94.4%)",
+        "⚠️ Posibilă scurgere de memorie detectată!"
+      ],
+      "impact": "May cause browser slowdown or crashes over time",
+      "status": "OPEN"
+    },
+    {
+      "id": "ISSUE-004",
+      "title": "High LCP (Largest Contentful Paint) time",
+      "severity": "MEDIUM",
+      "category": "Performance",
+      "description": "LCP metric is 3448ms, which is above recommended threshold",
+      "metrics": {
+        "LCP": "3448ms",
+        "target": "<2500ms"
+      },
+      "impact": "Slow perceived page load time",
+      "status": "OPEN"
+    },
+    {
+      "id": "ISSUE-005",
+      "title": "Persistent slow connection warning",
+      "severity": "LOW",
+      "category": "UI/UX",
+      "description": "Alert shows 'Conexiune lentă detectată' even on fast connections",
+      "displayed_info": {
+        "type": "4g",
+        "quality": "poor"
+      },
+      "impact": "May confuse users about actual connection quality",
+      "status": "OPEN"
+    }
+  ],
+  "summary": {
+    "total_issues": 5,
+    "critical": 2,
+    "high": 1,
+    "medium": 1,
+    "low": 1,
+    "blocking_issues": [
+      "Add to Cart functionality",
+      "Search functionality"
+    ]
+  }
+}

@@ -249,7 +249,8 @@ export const memoryMonitor = {
       used: performance.memory.usedJSHeapSize,
       total: performance.memory.totalJSHeapSize,
       limit: performance.memory.jsHeapSizeLimit,
-      percentage: (performance.memory.usedJSHeapSize / performance.memory.totalJSHeapSize) * 100
+      percentage: (performance.memory.usedJSHeapSize / performance.memory.totalJSHeapSize) * 100,
+      percentageOfLimit: (performance.memory.usedJSHeapSize / performance.memory.jsHeapSizeLimit) * 100
     };
   },
 
@@ -258,15 +259,21 @@ export const memoryMonitor = {
     const usage = this.getMemoryUsage();
     if (!usage) return false;
     
-    // Consider it a potential leak if using >80% of allocated memory
-    return usage.percentage > 80;
+    // Consider it a potential leak if using >90% of the heap LIMIT (not just allocated)
+    // or if the allocated heap is >80% of limit and usage is >90% of allocated
+    return usage.percentageOfLimit > 90 || 
+           (usage.total / usage.limit > 0.8 && usage.percentage > 90);
   },
 
   // Log memory usage
   logMemoryUsage() {
     const usage = this.getMemoryUsage();
     if (usage && process.env.NODE_ENV === 'development') {
-      console.log(`🧠 Memorie folosită: ${(usage.used / 1048576).toFixed(2)} MB (${usage.percentage.toFixed(1)}%)`);
+      const usedMB = (usage.used / 1048576).toFixed(2);
+      const totalMB = (usage.total / 1048576).toFixed(2);
+      const limitMB = (usage.limit / 1048576).toFixed(2);
+      
+      console.log(`🧠 Memorie: ${usedMB}MB/${totalMB}MB alocată (${usage.percentageOfLimit.toFixed(1)}% din limita de ${limitMB}MB)`);
       
       if (this.detectMemoryLeaks()) {
         console.warn('⚠️ Posibilă scurgere de memorie detectată!');

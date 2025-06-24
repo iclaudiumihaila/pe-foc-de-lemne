@@ -1,0 +1,313 @@
+# Admin Area Restructuring - Atomic Tasks (Revised)
+
+tasks:
+  # Phase 0: Setup
+  - id: "00"
+    slug: "create-layouts-directory"
+    description: "Create layouts directory structure"
+    deliverable: "src/layouts/ directory created with .gitkeep file"
+    dependencies: []
+    test: "Directory exists at frontend/src/layouts/"
+    
+  # Phase 1: Layout Foundation
+  - id: "01"
+    slug: "create-public-layout"
+    description: "Create PublicLayout wrapper component"
+    deliverable: "PublicLayout.jsx that renders Header, Outlet, Footer in that order"
+    dependencies: ["00"]
+    test: "Component renders children between Header (top) and Footer (bottom)"
+    
+  - id: "02"
+    slug: "create-admin-layout-structure"
+    description: "Create AdminLayout component with basic HTML structure"
+    deliverable: "AdminLayout.jsx with div containers for nav, sidebar, and content"
+    dependencies: ["00"]
+    test: "Component renders three divs: admin-nav, admin-sidebar, admin-content"
+    
+  - id: "03a"
+    slug: "wrap-public-routes"
+    description: "Wrap public routes with PublicLayout"
+    deliverable: "Public routes (/, /products, /cart) wrapped in PublicLayout"
+    dependencies: ["01"]
+    test: "Navigate to / shows Header component"
+    
+  - id: "03b"
+    slug: "wrap-admin-routes"
+    description: "Wrap admin routes with AdminLayout"
+    deliverable: "Admin routes (/admin/*) wrapped in AdminLayout"
+    dependencies: ["02"]
+    test: "Navigate to /admin/dashboard does NOT show Header component"
+    
+  - id: "03c"
+    slug: "test-layout-routing"
+    description: "Verify layout routing works correctly"
+    deliverable: "Test file confirming correct layout rendering"
+    dependencies: ["03a", "03b"]
+    test: "Test passes: public routes have Header, admin routes don't"
+
+  # Phase 2: Admin Navigation Components
+  - id: "04"
+    slug: "create-admin-sidebar-context"
+    description: "Create context for sidebar state management"
+    deliverable: "AdminSidebarContext.jsx with isCollapsed state and toggleCollapse function"
+    dependencies: ["02"]
+    test: "Context provides boolean isCollapsed and function toggleCollapse"
+    
+  - id: "05"
+    slug: "create-admin-navbar"
+    description: "Create AdminNavBar component with user info"
+    deliverable: "AdminNavBar.jsx displaying 'Admin: {user.name}' and logout button"
+    dependencies: ["02"]
+    test: "Component displays 'Admin: Administrator' when user.name is 'Administrator'"
+    
+  - id: "06"
+    slug: "implement-logout-functionality"
+    description: "Add working logout to AdminNavBar"
+    deliverable: "Logout button that calls auth.logout() and redirects to /admin/login"
+    dependencies: ["05"]
+    test: "Clicking logout clears auth and redirects to login page"
+    
+  - id: "07"
+    slug: "create-admin-sidebar-structure"
+    description: "Create AdminSidebar component structure"
+    deliverable: "AdminSidebar.jsx with nav element containing ul for menu items"
+    dependencies: ["04"]
+    test: "Component renders nav > ul structure"
+    
+  - id: "08"
+    slug: "add-sidebar-menu-items"
+    description: "Add navigation menu items to sidebar"
+    deliverable: "Sidebar with Dashboard, Products, Orders, Categories links"
+    dependencies: ["07"]
+    test: "All four menu items visible with correct href attributes"
+    
+  - id: "09"
+    slug: "add-sidebar-collapse-toggle"
+    description: "Add collapse toggle button to sidebar"
+    deliverable: "Toggle button that uses AdminSidebarContext to collapse/expand"
+    dependencies: ["07", "04"]
+    test: "Clicking toggle changes isCollapsed state in context"
+    
+  - id: "10"
+    slug: "integrate-navbar-to-layout"
+    description: "Add AdminNavBar to AdminLayout"
+    deliverable: "AdminLayout renders AdminNavBar in admin-nav div"
+    dependencies: ["02", "05"]
+    test: "AdminNavBar visible at top of admin pages"
+    
+  - id: "11"
+    slug: "integrate-sidebar-to-layout"
+    description: "Add AdminSidebar to AdminLayout"
+    deliverable: "AdminLayout renders AdminSidebar in admin-sidebar div"
+    dependencies: ["02", "08"]
+    test: "AdminSidebar visible on left side of admin pages"
+
+  # Phase 3: Breadcrumb System
+  - id: "12"
+    slug: "create-breadcrumb-hook"
+    description: "Create useBreadcrumbs hook"
+    deliverable: "useBreadcrumbs.js hook that returns array based on current path"
+    dependencies: []
+    test: "Hook returns [{label: 'Dashboard', path: '/admin/dashboard'}] for /admin/dashboard"
+    
+  - id: "13"
+    slug: "create-breadcrumb-component"
+    description: "Create Breadcrumb display component"
+    deliverable: "Breadcrumb.jsx that renders breadcrumb trail with separators"
+    dependencies: ["12"]
+    test: "Component renders 'Dashboard' for single-level path"
+    
+  - id: "14"
+    slug: "add-breadcrumbs-to-navbar"
+    description: "Integrate breadcrumbs into AdminNavBar"
+    deliverable: "AdminNavBar displays breadcrumbs below user info"
+    dependencies: ["05", "13"]
+    test: "Breadcrumbs visible in admin navbar"
+
+  # Phase 4: Admin Dashboard Refactoring
+  - id: "15"
+    slug: "remove-dashboard-navbar"
+    description: "Remove embedded navigation from AdminDashboard"
+    deliverable: "AdminDashboard without nav element (lines 112-156 removed)"
+    dependencies: ["11"]
+    test: "AdminDashboard.jsx contains no nav elements"
+    
+  - id: "16"
+    slug: "remove-dashboard-sidebar"
+    description: "Remove embedded sidebar from AdminDashboard"
+    deliverable: "AdminDashboard without aside element (lines 159-235 removed)"
+    dependencies: ["11"]
+    test: "AdminDashboard.jsx contains no aside elements"
+    
+  - id: "17"
+    slug: "adjust-dashboard-layout-classes"
+    description: "Update AdminDashboard container classes"
+    deliverable: "AdminDashboard main content uses 'admin-dashboard' class only"
+    dependencies: ["15", "16"]
+    test: "Dashboard content fits within admin-content area without overflow"
+
+  # Phase 5: Admin Pages Implementation
+  - id: "18"
+    slug: "create-admin-products-page"
+    description: "Create AdminProducts page component"
+    deliverable: "AdminProducts.jsx that renders ProductManager component"
+    dependencies: []
+    test: "Page renders with heading 'Products Management'"
+    
+  - id: "19"
+    slug: "create-admin-orders-page"
+    description: "Create AdminOrders page component"
+    deliverable: "AdminOrders.jsx that renders OrderManager component"
+    dependencies: []
+    test: "Page renders with heading 'Orders Management'"
+    
+  - id: "20"
+    slug: "create-admin-categories-page"
+    description: "Create AdminCategories page component"
+    deliverable: "AdminCategories.jsx that renders CategoryManager component"
+    dependencies: []
+    test: "Page renders with heading 'Categories Management'"
+    
+  - id: "21"
+    slug: "add-products-route"
+    description: "Add route for admin products page"
+    deliverable: "Route path='/admin/products' element={<AdminProducts />} in App.jsx"
+    dependencies: ["18", "03b"]
+    test: "Navigate to /admin/products shows Products Management"
+    
+  - id: "22"
+    slug: "add-orders-route"
+    description: "Add route for admin orders page"
+    deliverable: "Route path='/admin/orders' element={<AdminOrders />} in App.jsx"
+    dependencies: ["19", "03b"]
+    test: "Navigate to /admin/orders shows Orders Management"
+    
+  - id: "23"
+    slug: "add-categories-route"
+    description: "Add route for admin categories page"
+    deliverable: "Route path='/admin/categories' element={<AdminCategories />} in App.jsx"
+    dependencies: ["20", "03b"]
+    test: "Navigate to /admin/categories shows Categories Management"
+
+  # Phase 6: Styling
+  - id: "24"
+    slug: "create-admin-css-file"
+    description: "Create admin.css file"
+    deliverable: "styles/admin.css file created and imported in AdminLayout"
+    dependencies: ["02"]
+    test: "admin.css file exists and is loaded in browser"
+    
+  - id: "25"
+    slug: "add-admin-color-variables"
+    description: "Define admin color scheme variables"
+    deliverable: "CSS variables for admin colors in admin.css (:root section)"
+    dependencies: ["24"]
+    test: "CSS variables --admin-bg, --admin-primary defined"
+    
+  - id: "26"
+    slug: "style-admin-layout-containers"
+    description: "Add CSS for admin layout structure"
+    deliverable: "CSS classes for .admin-layout, .admin-nav, .admin-sidebar, .admin-content"
+    dependencies: ["24", "25"]
+    test: "Admin layout has grid/flex layout with proper spacing"
+    
+  - id: "27"
+    slug: "style-admin-components"
+    description: "Style AdminNavBar and AdminSidebar"
+    deliverable: "CSS for navbar height, sidebar width, colors from variables"
+    dependencies: ["26"]
+    test: "Navbar is 60px high, sidebar is 250px wide"
+    
+  - id: "28"
+    slug: "add-sidebar-active-state"
+    description: "Implement active link highlighting in sidebar"
+    deliverable: "Active menu item has different background color"
+    dependencies: ["08", "27"]
+    test: "Current page link has --admin-primary background"
+
+  # Phase 7: Additional Features
+  - id: "29"
+    slug: "add-back-to-store-link"
+    description: "Add 'Back to Store' link to sidebar"
+    deliverable: "Link at bottom of sidebar that goes to '/'"
+    dependencies: ["08"]
+    test: "Clicking 'Back to Store' navigates to home page"
+    
+  - id: "30"
+    slug: "add-mobile-menu-toggle"
+    description: "Add mobile menu toggle button"
+    deliverable: "Hamburger button in AdminNavBar for mobile devices"
+    dependencies: ["05"]
+    test: "Button visible on screens < 768px"
+    
+  - id: "31"
+    slug: "implement-mobile-sidebar"
+    description: "Make sidebar responsive for mobile"
+    deliverable: "Sidebar slides in/out on mobile when toggled"
+    dependencies: ["30", "11"]
+    test: "Sidebar hidden by default on mobile, shows when toggled"
+    
+  - id: "32"
+    slug: "add-404-admin-route"
+    description: "Create 404 page for invalid admin routes"
+    deliverable: "Admin404.jsx component for unmatched admin routes"
+    dependencies: ["03b"]
+    test: "Navigate to /admin/invalid shows admin 404 page"
+
+  # Phase 8: Authentication Integration
+  - id: "33"
+    slug: "add-auth-check-to-admin-layout"
+    description: "Add authentication check in AdminLayout"
+    deliverable: "useEffect in AdminLayout that redirects if !isAuthenticated"
+    dependencies: ["02"]
+    test: "Unauthenticated users redirected to /admin/login"
+    
+  - id: "34"
+    slug: "create-protected-route-wrapper"
+    description: "Create ProtectedRoute component for admin routes"
+    deliverable: "ProtectedRoute.jsx that checks auth before rendering children"
+    dependencies: []
+    test: "Component redirects to login if not authenticated"
+    
+  - id: "35"
+    slug: "wrap-admin-routes-with-protection"
+    description: "Apply ProtectedRoute to all admin routes except login"
+    deliverable: "All admin routes except /admin/login wrapped with ProtectedRoute"
+    dependencies: ["34", "03b"]
+    test: "Cannot access /admin/dashboard without authentication"
+
+  # Phase 9: Final Integration  
+  - id: "36"
+    slug: "update-dashboard-navigation-links"
+    description: "Update dashboard quick action links"
+    deliverable: "Dashboard links use correct routes (/admin/products/new, etc)"
+    dependencies: ["21", "22", "23"]
+    test: "All dashboard quick action links navigate correctly"
+    
+  - id: "37"
+    slug: "test-complete-admin-flow"
+    description: "Integration test for complete admin flow"
+    deliverable: "Test file covering login → dashboard → navigate → logout"
+    dependencies: ["35", "36"]
+    test: "Integration test passes for full admin workflow"
+    
+  - id: "38"
+    slug: "cleanup-console-warnings"
+    description: "Fix any console warnings or errors"
+    deliverable: "No console warnings in admin area"
+    dependencies: ["37"]
+    test: "Browser console shows no errors or warnings"
+    
+  - id: "39"
+    slug: "performance-audit"
+    description: "Run performance audit on admin area"
+    deliverable: "Performance report showing load times < 3s"
+    dependencies: ["38"]
+    test: "Admin dashboard loads in under 3 seconds"
+    
+  - id: "40"
+    slug: "final-review-checklist"
+    description: "Complete final review checklist"
+    deliverable: "Checklist confirming all requirements met"
+    dependencies: ["39"]
+    test: "All checklist items marked complete"

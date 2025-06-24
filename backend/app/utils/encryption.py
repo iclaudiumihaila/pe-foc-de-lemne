@@ -499,3 +499,7 @@ def get_token_manager() -> TokenManager:
     if token_manager is None:
         raise ValueError("Token manager not initialized")
     return token_manager
+
+def get_sms_encryption_manager() -> EncryptionManager:
+    """Get encryption manager for SMS-related encryption"""
+    return get_encryption_manager()
