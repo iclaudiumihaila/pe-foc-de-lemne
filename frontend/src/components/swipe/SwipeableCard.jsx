@@ -9,7 +9,6 @@ const SwipeableCard = ({ product, onSwipe, onTap, isTop, onAddToCart }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [velocity, setVelocity] = useState(0);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [touchStartTime, setTouchStartTime] = useState(0);
   const [totalMovement, setTotalMovement] = useState(0);
   const cardRef = useRef(null);
@@ -130,7 +129,7 @@ const SwipeableCard = ({ product, onSwipe, onTap, isTop, onAddToCart }) => {
       card.removeEventListener('touchmove', handleTouchMove);
       card.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [isDragging, startPos, position, onSwipe, isTop]);
+  }, [isDragging, startPos, position, onSwipe, isTop, totalMovement, touchStartTime, velocity]);
 
   if (!product) return null;
 
@@ -292,7 +291,6 @@ const SwipeableCard = ({ product, onSwipe, onTap, isTop, onAddToCart }) => {
         isOpen={isExpanded}
         onClose={() => {
           setIsExpanded(false);
-          setCurrentImageIndex(0);
         }}
         product={product}
         onAddToCart={onAddToCart}

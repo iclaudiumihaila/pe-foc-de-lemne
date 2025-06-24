@@ -10,7 +10,6 @@ const CartSummary = ({
   const { 
     cartItemCount, 
     cartSubtotal, 
-    cartTax, 
     cartTotal,
     formatPrice,
     validateCart

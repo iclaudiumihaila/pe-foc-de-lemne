@@ -34,7 +34,12 @@ def create_application():
     app = create_app(config_class)
     
     # Configure CORS for frontend integration
-    cors_origins = app.config.get('CORS_ORIGINS', ['http://localhost:3000'])
+    if env == 'development':
+        # In development, allow all origins for easier testing
+        cors_origins = '*'
+    else:
+        cors_origins = app.config.get('CORS_ORIGINS', ['http://localhost:3000'])
+    
     CORS(app, 
          origins=cors_origins,
          supports_credentials=True,

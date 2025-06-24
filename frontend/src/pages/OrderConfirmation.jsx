@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import api from '../services/api';
 
 const OrderConfirmation = () => {
   const { orderNumber } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
 
   useEffect(() => {
     if (!orderNumber) {

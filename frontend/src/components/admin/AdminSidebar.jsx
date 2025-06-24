@@ -4,7 +4,7 @@ import { useAdminSidebar } from '../../context/AdminSidebarContext';
 import { LayoutDashboard, Package, ShoppingBag, FolderTree, MessageSquare, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const AdminSidebar = () => {
-  const { isCollapsed, toggleCollapse, activeItem, setActiveItem } = useAdminSidebar();
+  const { isCollapsed, toggleCollapse, setActiveItem } = useAdminSidebar();
   const location = useLocation();
 
   return (

@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCartContext } from '../contexts/CartContext';
 import CartItem from '../components/cart/CartItem';
-import CartSummary, { EmptyCartSummary } from '../components/cart/CartSummary';
 import { PageLoading } from '../components/common/Loading';
 import ErrorMessage, { NetworkError, ServerError } from '../components/common/ErrorMessage';
 import { SectionErrorBoundary } from '../components/common/ErrorBoundary';
@@ -21,17 +20,6 @@ const Cart = () => {
   const toast = useApiToast();
   const [clearingCart, setClearingCart] = useState(false);
   
-  // Detect mobile device - must be before any conditional returns
-  const [isMobile, setIsMobile] = useState(false);
-  
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   // Handle cart clearing with error handling
   const handleClearCart = async () => {

@@ -84,7 +84,7 @@ const AdminOrderDetails = () => {
     setError(null);
     
     try {
-      const response = await adminOrderService.updateOrderStatus(order.id, newStatus, statusNote);
+      await adminOrderService.updateOrderStatus(order.id, newStatus, statusNote);
       setOrder({ ...order, status: newStatus });
       setStatusNote('');
       

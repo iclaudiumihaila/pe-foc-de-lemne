@@ -7,14 +7,13 @@ import { useToast } from '../../components/common/Toast';
 const AdminSMSProviders = () => {
   const [providers, setProviders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedProvider, setSelectedProvider] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [providerToDelete, setProviderToDelete] = useState(null);
   const { showToast } = useToast();
 
-  // Mock data for now - will be replaced with API calls
-  const mockProviders = [
+  useEffect(() => {
+    // Mock data for now - will be replaced with API calls
+    const mockProviders = [
     {
       id: 1,
       name: 'SMSO',
@@ -45,7 +44,6 @@ const AdminSMSProviders = () => {
     }
   ];
 
-  useEffect(() => {
     // Simulate API call
     setTimeout(() => {
       setProviders(mockProviders);
@@ -165,13 +163,12 @@ const AdminSMSProviders = () => {
   ];
 
   const handleCreate = () => {
-    setSelectedProvider(null);
-    setIsModalOpen(true);
+    // TODO: Implement create functionality
   };
 
   const handleEdit = (provider) => {
-    setSelectedProvider(provider);
-    setIsModalOpen(true);
+    // TODO: Implement edit functionality
+    console.log('Edit provider:', provider);
   };
 
   const handleDeleteClick = (provider) => {
@@ -194,23 +191,6 @@ const AdminSMSProviders = () => {
       // Refresh providers
     } catch (error) {
       showToast('Eroare la ștergerea providerului', 'error');
-    }
-  };
-
-  const handleFormSubmit = async (formData) => {
-    try {
-      if (selectedProvider) {
-        // Update provider
-        showToast('Provider actualizat cu succes', 'success');
-      } else {
-        // Create provider
-        showToast('Provider adăugat cu succes', 'success');
-      }
-      setIsModalOpen(false);
-      setSelectedProvider(null);
-      // Refresh providers
-    } catch (error) {
-      showToast('Eroare la salvarea providerului', 'error');
     }
   };
 

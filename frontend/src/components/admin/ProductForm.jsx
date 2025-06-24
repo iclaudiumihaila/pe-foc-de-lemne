@@ -123,7 +123,7 @@ const ProductForm = ({ product, onSubmit, onCancel }) => {
         is_available: product.is_available !== undefined ? product.is_available : true
       });
     }
-  }, [product]);
+  }, [product, categories]);
 
   const loadCategories = async () => {
     try {

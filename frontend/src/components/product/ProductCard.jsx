@@ -12,13 +12,8 @@ const ProductCard = ({ product, onAddToCart, className = '' }) => {
 
   const {
     name,
-    price,
     image,
-    description,
-    category,
-    unit,
     inStock = true,
-    isOrganic = false,
     quantity = 1
   } = product;
 
@@ -32,13 +27,6 @@ const ProductCard = ({ product, onAddToCart, className = '' }) => {
     } else {
       addToCart(product, quantityToAdd || quantity || 1);
     }
-  };
-
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('ro-RO', {
-      style: 'currency',
-      currency: 'RON'
-    }).format(price);
   };
 
   return (

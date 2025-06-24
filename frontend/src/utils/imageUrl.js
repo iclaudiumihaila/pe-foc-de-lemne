@@ -4,9 +4,12 @@
 
 // Get the base URL for the backend server (without /api)
 const getBackendBaseUrl = () => {
-  const apiUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000/api';
-  // Remove the /api part to get the base server URL
-  return apiUrl.replace(/\/api$/, '');
+  // Use the same host as the current page, with backend port
+  const protocol = window.location.protocol;
+  const hostname = window.location.hostname;
+  const backendPort = 8000;
+  
+  return `${protocol}//${hostname}:${backendPort}`;
 };
 
 /**

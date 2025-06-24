@@ -1,6 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { ShoppingCart, RefreshCw, Grid } from 'lucide-react';
 import SwipeableCard from './SwipeableCard';
 import { getImageUrl } from '../../utils/imageUrl';
 

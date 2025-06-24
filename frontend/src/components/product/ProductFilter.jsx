@@ -124,67 +124,6 @@ const ProductFilter = ({
     </div>
   );
 
-  // Filter Summary Component
-  const FilterSummary = () => {
-    const hasActiveSearch = searchTerm && searchTerm.trim();
-    const hasActiveCategory = selectedCategory;
-    const hasActiveFilters = hasActiveSearch || hasActiveCategory;
-
-    if (!hasActiveFilters && !showResultCount) return null;
-
-    return (
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-3 border-t border-gray-200">
-        {showResultCount && (
-          <div className="text-sm text-gray-600">
-            {hasActiveSearch ? (
-              <span>
-                <strong>{totalResults}</strong> rezultate pentru <strong>"{searchTerm}"</strong>
-              </span>
-            ) : (
-              <span>
-                <strong>{totalResults}</strong> produse {hasActiveCategory && 'în categoria selectată'}
-              </span>
-            )}
-          </div>
-        )}
-        
-        {hasActiveFilters && (
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">Filtre active:</span>
-            <div className="flex gap-1">
-              {hasActiveSearch && (
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
-                  Căutare: "{searchTerm}"
-                  <button
-                    onClick={handleClearSearch}
-                    className="ml-1 hover:text-blue-900"
-                  >
-                    <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </span>
-              )}
-              {hasActiveCategory && (
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
-                  {categories.find(cat => cat.id === selectedCategory)?.name || 'Categorie'}
-                  <button
-                    onClick={() => onCategoryChange('')}
-                    className="ml-1 hover:text-green-900"
-                  >
-                    <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </span>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
-
   // Mobile Filter Toggle
   const MobileFilterToggle = () => {
     const activeCount = getActiveFiltersCount();

@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useCartContext } from '../contexts/CartContext';
 import api from '../services/api';
 import { SectionLoading } from '../components/common/Loading';
@@ -8,11 +7,11 @@ import ErrorMessage from '../components/common/ErrorMessage';
 import { useApiToast } from '../components/common/Toast';
 import ProductFilter from '../components/product/ProductFilter';
 import ProductCard from '../components/product/ProductCard';
-import { Layers } from 'lucide-react';
 
 const Products = () => {
   const { addToCart } = useCartContext();
-  const toast = useApiToast();
+  const toastApi = useApiToast();
+  const toast = useMemo(() => toastApi, []);
   
   // State management
   const [products, setProducts] = useState([]);
@@ -41,6 +40,9 @@ const Products = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+  
+  // Track initial mount
+  const isInitialMount = useRef(true);
   
   useEffect(() => {
     const checkMobile = () => {
@@ -85,7 +87,7 @@ const Products = () => {
   // Fetch categories with comprehensive error handling
   const fetchCategories = useCallback(async () => {
     try {
-      const response = await api.get('/categories');
+      const response = await api.get('/categories/');
       if (response.data.success) {
         setCategories(response.data.data.categories);
       }
@@ -128,7 +130,7 @@ const Products = () => {
         params.set('category_id', selectedCategory);
       }
       
-      const response = await api.get(`/products?${params}`);
+      const response = await api.get(`/products/?${params}`);
       
       if (response.data.success) {
         setProducts(response.data.data.products);
@@ -168,25 +170,23 @@ const Products = () => {
       setLoading(false);
       setSearchLoading(false);
     }
-  }, [currentPage, debouncedSearchTerm, selectedCategory, sortBy, sortOrder, toast]);
+  }, [currentPage, debouncedSearchTerm, selectedCategory, sortBy, sortOrder]);
 
   // Initialize categories once on mount
   useEffect(() => {
     fetchCategories();
-  }, []); // Empty dependency array - only run once
+  }, [fetchCategories]);
 
   // Fetch products when filters or page changes
   useEffect(() => {
-    // Skip if we're in the middle of changing filters
-    if (currentPage === 1 || !loading) {
-      fetchProducts();
-    }
-  }, [currentPage, debouncedSearchTerm, selectedCategory, sortBy, sortOrder]);
+    fetchProducts();
+  }, [fetchProducts]);
 
   // Reset to first page when filters change (but not on initial mount)
   useEffect(() => {
-    const isInitialMount = currentPage === 1 && !debouncedSearchTerm && !selectedCategory;
-    if (!isInitialMount) {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+    } else {
       setCurrentPage(1);
     }
   }, [debouncedSearchTerm, selectedCategory, sortBy, sortOrder]);

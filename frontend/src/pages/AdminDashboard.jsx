@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Loading from '../components/common/Loading';
 import ErrorMessage from '../components/common/ErrorMessage';
 import { Package, ShoppingBag, Clock, FolderTree, Plus, FileText, Archive } from 'lucide-react';
 
 const AdminDashboard = () => {
-  const navigate = useNavigate();
-  const { isAuthenticated, user, isLoading, isAdmin } = useAuth();
+  const { isLoading } = useAuth();
 
   // Dashboard state
   const [dashboardData, setDashboardData] = useState({

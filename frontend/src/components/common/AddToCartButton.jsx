@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { ShoppingCart, Check } from 'lucide-react';
+import { ShoppingCart } from 'lucide-react';
 import { showFloatingIndicator } from '../animations/FloatingIndicator';
+import { showMagicSparkles } from '../animations/MagicSparkles';
 
 const AddToCartButton = ({ 
   onClick, 
@@ -15,6 +16,10 @@ const AddToCartButton = ({
   const handleClick = useCallback(async (e) => {
     if (buttonState !== 'normal' || disabled) return;
 
+    // Add magic effects immediately
+    buttonRef.current?.classList.add('magic-wobble');
+    showMagicSparkles(buttonRef.current);
+    
     setButtonState('loading');
     
     try {
@@ -26,16 +31,21 @@ const AddToCartButton = ({
       // Show success state
       setButtonState('success');
       
+      // Add pulse effect on success
+      buttonRef.current?.classList.add('magic-pulse');
+      
       // Show floating indicator
       showFloatingIndicator(quantity, buttonRef.current);
       
       // Return to normal state after 1 second
       setTimeout(() => {
         setButtonState('normal');
+        buttonRef.current?.classList.remove('magic-wobble', 'magic-pulse');
       }, 1000);
     } catch (error) {
       // If there's an error, return to normal state immediately
       setButtonState('normal');
+      buttonRef.current?.classList.remove('magic-wobble', 'magic-pulse');
       console.error('Error adding to cart:', error);
     }
   }, [onClick, buttonState, disabled, quantity]);

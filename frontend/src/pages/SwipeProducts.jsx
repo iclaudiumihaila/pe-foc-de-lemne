@@ -1,15 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Navigate, Link } from 'react-router-dom';
 import { useCartContext } from '../contexts/CartContext';
 import api from '../services/api';
 import { useApiToast } from '../components/common/Toast';
 import { SectionLoading } from '../components/common/Loading';
 import ErrorMessage from '../components/common/ErrorMessage';
-import { ChevronLeft } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import ProductCardStack from '../components/swipe/ProductCardStack';
 // Removed SwipeActions - using gesture-only interface
-import { showFloatingIndicator } from '../components/animations/FloatingIndicator';
 import { getImageUrl } from '../utils/imageUrl';
 import '../styles/swipe-animations.css';
 
@@ -25,7 +22,7 @@ const isMobile = () => {
 };
 
 const SwipeProducts = () => {
-  const { addToCart, removeFromCart } = useCartContext();
+  const { addToCart } = useCartContext();
   const toast = useApiToast();
   
   // State management
@@ -35,18 +32,13 @@ const SwipeProducts = () => {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(null);
-  const [hasMore, setHasMore] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [showDetailModal, setShowDetailModal] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
   
   // Track session for analytics
-  const [sessionStart] = useState(Date.now());
   const [swipeCount, setSwipeCount] = useState(0);
   const [rightSwipes, setRightSwipes] = useState(0);
   const [hideInstructions, setHideInstructions] = useState(false);
   
-  const fetchProducts = async (page = 1) => {
+  const fetchProducts = useCallback(async (page = 1) => {
     try {
       if (page === 1) {
         setLoading(true);
@@ -74,12 +66,9 @@ const SwipeProducts = () => {
           // Append new products
           setProducts(prev => [...prev, ...productsData]);
         }
-        setHasMore(productsData.length === 20);
-        setCurrentPage(page);
       } else {
         console.error('Invalid products data:', productsData);
         setProducts([]);
-        setHasMore(false);
       }
     } catch (err) {
       console.error('Error fetching products:', err);
@@ -93,7 +82,7 @@ const SwipeProducts = () => {
       setLoading(false);
       setLoadingMore(false);
     }
-  };
+  }, [toast]);
   
   // Transform product for cart compatibility
   const transformProduct = (product) => {
@@ -290,7 +279,7 @@ const SwipeProducts = () => {
     if (isMobileDevice) {
       fetchProducts(1);
     }
-  }, [isMobileDevice]);
+  }, [isMobileDevice, fetchProducts]);
   
   // Since we're looping, we don't need to preload more products
   // This can be removed or kept for initial load optimization
@@ -367,10 +356,7 @@ const SwipeProducts = () => {
             products={products}
             currentIndex={currentIndex}
             onSwipe={handleSwipe}
-            onCardTap={(product) => {
-              setSelectedProduct(product);
-              setShowDetailModal(true);
-            }}
+            onCardTap={() => {}}
             onAddToCart={handleAddToCart}
             swipeHistory={swipeHistory}
             hideInstructions={hideInstructions}

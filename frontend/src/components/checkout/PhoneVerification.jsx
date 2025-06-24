@@ -10,7 +10,6 @@ const PhoneVerification = ({ onVerified, initialPhone = '' }) => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [timeLeft, setTimeLeft] = useState(0);
-  const [customerData, setCustomerData] = useState(null);
   
   const codeInputRefs = useRef([]);
 
@@ -165,8 +164,6 @@ const PhoneVerification = ({ onVerified, initialPhone = '' }) => {
         // Store JWT token
         localStorage.setItem('checkout_token', response.data.token);
         
-        // Store customer data
-        setCustomerData(response.data.customer);
         setSuccess('Telefon verificat cu succes!');
         
         // Call parent callback with verification data
