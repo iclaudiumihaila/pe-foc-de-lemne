@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useCartContext } from '../contexts/CartContext';
 import api from '../services/api';
 import { SectionLoading } from '../components/common/Loading';
