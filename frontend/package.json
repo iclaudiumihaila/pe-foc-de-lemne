@@ -46,6 +46,8 @@
         "compression-webpack-plugin": "^11.1.0",
         "eslint": "^8.54.0",
         "eslint-config-react-app": "^7.0.1",
+        "file-loader": "^6.2.0",
+        "image-webpack-loader": "^8.1.0",
         "prettier": "^3.1.0",
         "web-vitals": "^3.5.0",
         "webpack-bundle-analyzer": "^4.10.2"

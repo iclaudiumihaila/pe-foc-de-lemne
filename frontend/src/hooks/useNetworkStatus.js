@@ -171,7 +171,7 @@ export const useConnectionQuality = () => {
         };
         
         // Use a small image for testing
-        img.src = `${process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000'}/favicon.ico?t=${Date.now()}`;
+        img.src = `${process.env.REACT_APP_API_BASE_URL || ''}/favicon.ico?t=${Date.now()}`;
       } catch (error) {
         setQuality('poor');
         setLatency(null);
