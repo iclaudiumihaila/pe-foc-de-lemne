@@ -169,7 +169,7 @@ const Products = () => {
       setLoading(false);
       setSearchLoading(false);
     }
-  }, [currentPage, debouncedSearchTerm, selectedCategory, sortBy, sortOrder, toast]);
+  }, [currentPage, debouncedSearchTerm, selectedCategory, sortBy, sortOrder]);
 
   // Initialize categories once on mount
   useEffect(() => {

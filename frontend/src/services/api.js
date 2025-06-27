@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Base configuration - use the same host as the frontend
-const API_BASE_URL = `${window.location.protocol}//${window.location.hostname}:8000/api`;
+// Base configuration - use environment variable or fallback to same host as frontend
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || `${window.location.protocol}//${window.location.hostname}:8000/api`;
 const API_TIMEOUT = 10000; // 10 seconds
 
 // Romanian error messages
@@ -63,11 +63,13 @@ const api = axios.create({
 // Request interceptor
 api.interceptors.request.use(
   (config) => {
-    // Add timestamp to prevent caching
-    config.params = {
-      ...config.params,
-      _t: Date.now()
-    };
+    // Add timestamp to prevent caching (only for non-GET requests)
+    if (config.method && config.method.toLowerCase() !== 'get') {
+      config.params = {
+        ...config.params,
+        _t: Date.now()
+      };
+    }
     
     // Add auth tokens
     const adminToken = localStorage.getItem('auth_access_token');
