@@ -34,17 +34,14 @@ def create_application():
     app = create_app(config_class)
     
     # Configure CORS for frontend integration
-    if env == 'development':
-        # In development, allow all origins for easier testing
-        cors_origins = '*'
-    else:
-        cors_origins = app.config.get('CORS_ORIGINS', ['http://localhost:3000'])
+    # Use the CORS_ORIGINS from config which already includes multiple origins
+    cors_origins = app.config.get('CORS_ORIGINS', ['http://localhost:3000'])
     
     CORS(app, 
          origins=cors_origins,
          supports_credentials=True,
-         allow_headers=['Content-Type', 'Authorization'],
-         methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
+         allow_headers=['Content-Type', 'Authorization', 'X-Requested-With'],
+         methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'HEAD'])
     
     logging.info(f"CORS configured for origins: {cors_origins}")
     
@@ -74,17 +71,6 @@ def create_application():
         upload_folder = os.path.join(os.path.dirname(__file__), 'uploads')
         return send_from_directory(upload_folder, filename)
     
-    # Add CORS preflight handling
-    @app.before_request
-    def handle_preflight():
-        """Handle CORS preflight requests."""
-        from flask import request, make_response
-        if request.method == "OPTIONS":
-            response = make_response()
-            response.headers.add("Access-Control-Allow-Origin", "*")
-            response.headers.add('Access-Control-Allow-Headers', "*")
-            response.headers.add('Access-Control-Allow-Methods', "*")
-            return response
     
     # Log application startup information
     logging.info("=" * 60)

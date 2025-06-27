@@ -13,6 +13,7 @@ import argparse
 
 # Production MongoDB URI
 PROD_MONGO_URI = "mongodb://mongo:wHkJtfTKOIDKtkzSxcOIjhCZpbeUPmkF@shuttle.proxy.rlwy.net:58855"
+DATABASE_NAME = "pe_foc_de_lemne"
 
 def hash_password(password):
     """Hash a password using bcrypt"""
@@ -133,7 +134,7 @@ def main():
     try:
         # Connect to MongoDB
         client = MongoClient(PROD_MONGO_URI)
-        db = client.get_default_database()
+        db = client[DATABASE_NAME]
         
         # Test connection
         client.server_info()
