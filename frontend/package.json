@@ -8,9 +8,10 @@
         "npm": ">=8.0.0"
     },
     "scripts": {
-        "start": "react-scripts start",
-        "build": "react-scripts build",
-        "test": "react-scripts test",
+        "start": "craco start",
+        "start:prod": "node server.js",
+        "build": "craco build",
+        "test": "craco test",
         "eject": "react-scripts eject",
         "lint": "eslint src --ext .js,.jsx,.ts,.tsx",
         "lint:fix": "eslint src --ext .js,.jsx,.ts,.tsx --fix",
@@ -22,6 +23,7 @@
         "autoprefixer": "^10.4.16",
         "axios": "^1.6.2",
         "clsx": "^2.0.0",
+        "express": "^5.1.0",
         "lucide-react": "^0.522.0",
         "postcss": "^8.4.32",
         "react": "^18.2.0",
@@ -35,6 +37,7 @@
         "tailwindcss": "^3.3.6"
     },
     "devDependencies": {
+        "@craco/craco": "^7.1.0",
         "@testing-library/jest-dom": "^6.1.5",
         "@testing-library/react": "^13.4.0",
         "@testing-library/user-event": "^14.5.1",

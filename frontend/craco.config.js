@@ -196,6 +196,11 @@ module.exports = {
     open: false,
     compress: true,
     historyApiFallback: true,
+    allowedHosts: [
+      'localhost',
+      '.railway.app',
+      '.up.railway.app'
+    ],
     client: {
       overlay: {
         errors: true,
